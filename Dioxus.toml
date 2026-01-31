@@ -1,0 +1,17 @@
+[application]
+name = "Open MCP Manager"
+default_platform = "desktop"
+
+[web.app]
+title = "Open MCP Manager"
+
+[web.resource]
+style = ["public/style.css"]
+
+[desktop]
+window_resizable = true
+window_title = "Open MCP Manager"
+window_width = 1200
+window_height = 800
+# transparent = true # For custom titlebar later
+category = "Productivity"

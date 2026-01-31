@@ -1,0 +1,104 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          draft: true
+          prerelease: false
+
+  build-release:
+    name: Build Release
+    needs: create-release
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            platform: desktop
+            asset_suffix: linux-amd64.deb
+            # Linux deb naming is usually handled by dx/dpkg, but we'll glob it specially
+
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            platform: desktop
+            asset_suffix: windows-amd64.exe
+
+          - os: windows-latest
+            target: aarch64-pc-windows-msvc
+            platform: desktop
+            asset_suffix: windows-arm64.exe
+
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            platform: desktop
+            asset_suffix: macos-arm64.tar.gz
+
+          - os: macos-13
+            target: x86_64-apple-darwin
+            platform: desktop
+            asset_suffix: macos-intel.tar.gz
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install Linux Dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libssl-dev
+
+      - name: Install Dioxus CLI
+        run: cargo install dioxus-cli
+
+      - name: Build
+        run: dx bundle --platform ${{ matrix.platform }} --release
+
+      # prepare artifacts
+
+      - name: Rename Windows Artifact
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          cd dist/bundle/windows
+          mv *.exe ../../../open-mcp-manager-${{ matrix.asset_suffix }}
+
+      - name: Bundle MacOS Artifact
+        if: runner.os == 'macOS'
+        run: |
+          cd dist/bundle/macos
+          tar -czf ../../../open-mcp-manager-${{ matrix.asset_suffix }} *.app
+
+      # linux deb usually has version and arch in name, we can just copy it to root or upload from location
+      # but to be consistent let's assume standard deb behavior and just glob it
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            open-mcp-manager-${{ matrix.asset_suffix }}
+            dist/bundle/linux/deb/*.deb

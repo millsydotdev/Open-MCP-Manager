@@ -1,12 +1,10 @@
 /target
 /dist
-/.dioxus
 **/*.rs.bk
+*.sqlite
 *.db
 *.db-shm
 *.db-wal
+.env
 .vscode
 .DS_Store
-node_modules
-src-legacy
-src-tauri-legacy
