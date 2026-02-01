@@ -8,7 +8,7 @@ description = "A unified desktop manager for Model Context Protocol servers"
 [dependencies]
 # Dioxus 0.7 - The core UI framework
 dioxus = { version = "0.6", features = ["desktop", "router"] }
-dioxus-logger = "0.6"
+dioxus-logger = "0.7"
 
 # Async Runtime
 tokio = { version = "1", features = ["full"] }
