@@ -1,6 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const { execSync } = require('node:child_process');
 
 const packageJsonPath = path.join(__dirname, '../package.json');
 const cargoTomlPath = path.join(__dirname, '../Cargo.toml');
@@ -18,7 +18,9 @@ const versionRegex = /^version\s*=\s*"(.*)"/m;
 const match = cargoToml.match(versionRegex);
 
 if (match) {
-    if (match[1] !== version) {
+    if (match[1] === version) {
+        console.log('Cargo.toml version already matches package.json');
+    } else {
         console.log(`Updating Cargo.toml version from ${match[1]} to ${version}`);
         cargoToml = cargoToml.replace(versionRegex, `version = "${version}"`);
         fs.writeFileSync(cargoTomlPath, cargoToml);
@@ -27,11 +29,9 @@ if (match) {
         try {
             execSync(`git add "${cargoTomlPath}"`);
             console.log('Added Cargo.toml to git stage');
-        } catch (e) {
+        } catch {
             console.warn('Failed to add Cargo.toml to git stage (may not be in a git repo or git not found)');
         }
-    } else {
-        console.log('Cargo.toml version already matches package.json');
     }
 } else {
     console.error('Could not find version field in Cargo.toml');
