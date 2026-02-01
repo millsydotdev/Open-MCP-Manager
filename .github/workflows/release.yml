@@ -101,7 +101,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # prepare artifacts (dioxus 0.7 outputs to target/dx/<app>/release/bundle/)
+      # Debug: Find bundle output location
+      - name: Find bundle location
+        shell: bash
+        run: |
+          echo "=== Looking for bundle files ==="
+          find . -name "*.app" -o -name "*.exe" -o -name "*.deb" 2>/dev/null | head -20
+          echo "=== target/dx structure ==="
+          ls -laR target/dx/ 2>/dev/null | head -50 || echo "No target/dx"
+          echo "=== dist structure ==="
+          ls -laR dist/ 2>/dev/null | head -50 || echo "No dist"
 
       - name: Rename Windows Artifact
         if: runner.os == 'Windows'
