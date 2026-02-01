@@ -101,19 +101,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # prepare artifacts
+      # prepare artifacts (dioxus 0.7 outputs to target/dx/<app>/release/bundle/)
 
       - name: Rename Windows Artifact
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          cd dist/bundle/windows
-          mv *.exe ../../../open-mcp-manager-${{ matrix.asset_suffix }}
+          cd target/dx/open-mcp-manager/release/bundle/windows
+          mv *.exe ../../../../../../open-mcp-manager-${{ matrix.asset_suffix }}
 
       - name: Create MacOS DMG
         if: runner.os == 'macOS'
         run: |
-          cd dist/bundle/macos
+          cd target/dx/open-mcp-manager/release/bundle/macos
           create-dmg \
             --volname "Open MCP Manager" \
             --window-pos 200 120 \
@@ -122,20 +122,20 @@ jobs:
             --icon "open-mcp-manager.app" 175 160 \
             --hide-extension "open-mcp-manager.app" \
             --app-drop-link 425 160 \
-            "../../../open-mcp-manager-${{ matrix.asset_suffix }}" \
+            "../../../../../../open-mcp-manager-${{ matrix.asset_suffix }}" \
             "open-mcp-manager.app"
 
       - name: Rename Linux Artifact
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          cd dist/bundle/linux/deb
+          cd target/dx/open-mcp-manager/release/bundle/deb
           DEB_FILE=$(ls *.deb 2>/dev/null | head -n 1)
           if [ -z "$DEB_FILE" ]; then
             echo "ERROR: No .deb file found"
             exit 1
           fi
-          mv "$DEB_FILE" "../../../../open-mcp-manager-${{ matrix.asset_suffix }}"
+          mv "$DEB_FILE" "../../../../../../open-mcp-manager-${{ matrix.asset_suffix }}"
 
       - name: Verify artifact exists
         shell: bash
