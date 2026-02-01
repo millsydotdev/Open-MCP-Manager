@@ -1,0 +1,206 @@
+[
+    {
+        "server": {
+            "name": "Memory",
+            "description": "Ephemeral memory server for storing capabilities and simple state.",
+            "version": "0.1.0"
+        },
+        "install_config": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-memory"
+            ]
+        }
+    },
+    {
+        "server": {
+            "name": "Brave Search",
+            "description": "Web search capabilities using Brave's API.",
+            "version": "0.1.0"
+        },
+        "install_config": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-brave-search"
+            ],
+            "env_template": {
+                "BRAVE_API_KEY": "YOUR_API_KEY_HERE"
+            }
+        }
+    },
+    {
+        "server": {
+            "name": "Google Drive",
+            "description": "Access and manage Google Drive files.",
+            "version": "0.1.0"
+        },
+        "install_config": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-gdrive"
+            ],
+            "wizard": [
+                {
+                    "title": "Get Credentials",
+                    "description": "You need to create a Google Cloud Project and enable the Drive API.",
+                    "action": {
+                        "type": "link",
+                        "url": "https://console.cloud.google.com/",
+                        "label": "Open Google Cloud Console"
+                    }
+                },
+                {
+                    "title": "Client ID",
+                    "description": "Enter your OAuth Client ID.",
+                    "action": {
+                        "type": "input",
+                        "key": "GOOGLE_CLIENT_ID",
+                        "label": "Client ID",
+                        "placeholder": "apps.googleusercontent.com"
+                    }
+                },
+                {
+                    "title": "Client Secret",
+                    "description": "Enter your OAuth Client Secret.",
+                    "action": {
+                        "type": "input",
+                        "key": "GOOGLE_CLIENT_SECRET",
+                        "label": "Client Secret"
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "server": {
+            "name": "PostgreSQL",
+            "description": "Read-only database access for PostgreSQL.",
+            "version": "0.1.0"
+        },
+        "install_config": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-postgres",
+                "postgresql://localhost/postgres"
+            ],
+            "env_template": {
+                "POSTGRES_URL": "postgresql://user:password@localhost/db"
+            }
+        }
+    },
+    {
+        "server": {
+            "name": "Git",
+            "description": "Git repository interaction tools.",
+            "version": "0.1.0"
+        },
+        "install_config": {
+            "command": "python",
+            "args": [
+                "-m",
+                "mcp_server_git",
+                "--repository",
+                "."
+            ]
+        }
+    },
+    {
+        "server": {
+            "name": "GitHub",
+            "description": "Interact with GitHub issues, PRs, and repositories.",
+            "version": "0.1.0"
+        },
+        "install_config": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-github"
+            ],
+            "wizard": [
+                {
+                    "title": "GitHub Token",
+                    "description": "Create a Personal Access Token (Classic) with 'repo' scope.",
+                    "action": {
+                        "type": "link",
+                        "url": "https://github.com/settings/tokens",
+                        "label": "Get GitHub Token"
+                    }
+                },
+                {
+                    "title": "Enter Token",
+                    "description": "Paste your PAT starting with ghp_...",
+                    "action": {
+                        "type": "input",
+                        "key": "GITHUB_PERSONAL_ACCESS_TOKEN",
+                        "label": "Personal Access Token"
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "server": {
+            "name": "Slack",
+            "description": "Interact with Slack channels and messages.",
+            "version": "0.1.0"
+        },
+        "install_config": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-slack"
+            ],
+            "env_template": {
+                "SLACK_BOT_TOKEN": "xoxb-...",
+                "SLACK_TEAM_ID": "T..."
+            }
+        }
+    },
+    {
+        "server": {
+            "name": "Puppeteer",
+            "description": "Browser automation and scraping.",
+            "version": "0.1.0"
+        },
+        "install_config": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-puppeteer"
+            ]
+        }
+    },
+    {
+        "server": {
+            "name": "Filesystem",
+            "description": "Secure local filesystem access.",
+            "version": "0.1.0"
+        },
+        "install_config": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-filesystem",
+                "./allowed-dir"
+            ]
+        }
+    },
+    {
+        "server": {
+            "name": "Sequential Thinking",
+            "description": "A meta-tool for breaking down complex problems.",
+            "version": "0.1.0"
+        },
+        "install_config": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-sequential-thinking"
+            ]
+        }
+    }
+]

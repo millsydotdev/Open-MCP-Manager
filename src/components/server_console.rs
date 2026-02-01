@@ -31,6 +31,7 @@ pub fn ServerConsole(props: ServerConsoleProps) -> Element {
     let mut prompts_list = use_signal(|| Vec::<Prompt>::new());
     let mut error_msg = use_signal(|| None::<String>);
     let mut is_loading = use_signal(|| false);
+    let mut ping_result = use_signal(|| None::<Result<u128, String>>);
 
     // Access the global processes map to find the signal for this server's logs
     let processes = APP_STATE.read().processes.clone();
@@ -148,6 +149,16 @@ pub fn ServerConsole(props: ServerConsoleProps) -> Element {
     };
 
     let srv_id_read = props.server.id.clone();
+    let srv_id_ping = props.server.id.clone();
+
+    let test_connection = move |_| {
+        let id_val = srv_id_ping.clone();
+        ping_result.set(None);
+        spawn(async move {
+            let res = AppState::ping_server(id_val).await;
+            ping_result.set(Some(res));
+        });
+    };
 
     let current_tab = active_tab.read().clone();
     let current_tool = active_tool.read().clone();
@@ -170,10 +181,23 @@ pub fn ServerConsole(props: ServerConsoleProps) -> Element {
                             span { class: "text-xs font-mono text-zinc-500", "{props.server.id}" }
                         }
                     }
-                    button {
-                        class: "p-2 hover:bg-zinc-800 rounded-full",
-                        onclick: move |_| props.on_close.call(()),
-                        "✕"
+                    div { class: "flex items-center gap-2",
+                        if let Some(res) = ping_result() {
+                             match res {
+                                 Ok(ms) => rsx! { span { class: "text-green-400 text-xs font-bold mr-2 animate-pulse", "🟢 {ms}ms" } },
+                                 Err(_) => rsx! { span { class: "text-red-400 text-xs font-bold mr-2", "🔴 Failed" } },
+                             }
+                         }
+                        button {
+                            class: "px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded text-xs font-bold mr-2 border border-zinc-700 transition-colors",
+                            onclick: test_connection,
+                            if ping_result().is_none() { "Test Connection" } else { "Retest" }
+                        }
+                        button {
+                            class: "p-2 hover:bg-zinc-800 rounded-full text-zinc-400 hover:text-white transition-colors",
+                            onclick: move |_| props.on_close.call(()),
+                            "✕"
+                        }
                     }
                 }
 

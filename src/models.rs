@@ -161,6 +161,31 @@ pub struct RegistryServer {
     pub homepage: Option<String>,
     pub bugs: Option<String>,
     pub version: Option<String>,
+    pub category: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum WizardAction {
+    Link {
+        url: String,
+        label: String,
+    },
+    Input {
+        key: String,
+        label: String,
+        placeholder: Option<String>,
+    },
+    Message {
+        text: String,
+    },
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct WizardStep {
+    pub title: String,
+    pub description: String,
+    pub action: WizardAction,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -168,4 +193,103 @@ pub struct RegistryInstallConfig {
     pub command: String,   // e.g. "npx" or "uvx"
     pub args: Vec<String>, // e.g. ["-y", "@modelcontextprotocol/server-gdrive"]
     pub env_template: Option<std::collections::HashMap<String, String>>, // Keys to prompt for
+    pub wizard: Option<Vec<WizardStep>>,
+}
+
+pub fn prepare_install_args(
+    item: &RegistryItem,
+    wizard_env_data: Option<&std::collections::HashMap<String, String>>,
+) -> CreateServerArgs {
+    if let Some(config) = &item.install_config {
+        let mut final_env = config.env_template.clone().unwrap_or_default();
+        if let Some(w_data) = wizard_env_data {
+            for (k, v) in w_data {
+                final_env.insert(k.clone(), v.clone());
+            }
+        }
+
+        CreateServerArgs {
+            name: item.server.name.clone(),
+            server_type: "stdio".to_string(), // Default to stdio for registry items
+            command: Some(config.command.clone()),
+            args: Some(config.args.clone()),
+            env: Some(final_env),
+            description: item.server.description.clone(),
+            ..Default::default()
+        }
+    } else {
+        // Default heuristic: npx -y <name>
+        CreateServerArgs {
+            name: item.server.name.clone(),
+            server_type: "stdio".to_string(),
+            command: Some("npx".to_string()),
+            args: Some(vec!["-y".to_string(), item.server.name.clone()]),
+            description: item.server.description.clone(),
+            ..Default::default()
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashMap;
+
+    #[test]
+    fn test_prepare_install_args_simple() {
+        let item = RegistryItem {
+            server: RegistryServer {
+                name: "simple-server".to_string(),
+                description: None,
+                homepage: None,
+                bugs: None,
+                version: None,
+                category: None,
+            },
+            install_config: None,
+        };
+
+        let args = prepare_install_args(&item, None);
+        assert_eq!(args.name, "simple-server");
+        assert_eq!(args.command, Some("npx".to_string()));
+        assert_eq!(
+            args.args,
+            Some(vec!["-y".to_string(), "simple-server".to_string()])
+        );
+    }
+
+    #[test]
+    fn test_prepare_install_args_with_config_and_wizard() {
+        let mut env_template = HashMap::new();
+        env_template.insert("API_KEY".to_string(), "".to_string());
+
+        let item = RegistryItem {
+            server: RegistryServer {
+                name: "complex-server".to_string(),
+                description: None,
+                homepage: None,
+                bugs: None,
+                version: None,
+                category: None,
+            },
+            install_config: Some(RegistryInstallConfig {
+                command: "uvx".to_string(),
+                args: vec!["complex-pkg".to_string()],
+                env_template: Some(env_template),
+                wizard: None, // Wizard steps don't matter for this logic, only the result map
+            }),
+        };
+
+        let mut wizard_data = HashMap::new();
+        wizard_data.insert("API_KEY".to_string(), "secret_123".to_string());
+
+        let args = prepare_install_args(&item, Some(&wizard_data));
+
+        assert_eq!(args.name, "complex-server");
+        assert_eq!(args.command, Some("uvx".to_string()));
+        assert_eq!(
+            args.env.as_ref().unwrap().get("API_KEY"),
+            Some(&"secret_123".to_string())
+        );
+    }
 }

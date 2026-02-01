@@ -245,4 +245,80 @@ impl AppState {
             Err("Process not running".into())
         }
     }
+
+    pub async fn ping_server(id: String) -> Result<u128, String> {
+        let proc_opt = {
+            let state = APP_STATE.read();
+            let handlers = state.running_handlers.read();
+            handlers.get(&id).cloned()
+        };
+
+        if let Some(proc) = proc_opt {
+            let start = std::time::Instant::now();
+            // We use list_tools as a ping mechanism. It's a standard MCP method.
+            let _ = proc.list_tools().await.map_err(|e| e.to_string())?;
+            let duration = start.elapsed().as_millis();
+            Ok(duration)
+        } else {
+            Err("Process not running".into())
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_app_state_crud_headless() {
+        // Create a dummy app to get a VirtualDom which provides the runtime for signals
+        fn mock_app() -> Element {
+            rsx! { div {} }
+        }
+        let mut dom = VirtualDom::new(mock_app);
+
+        // Push the runtime to the current thread via rebuild
+        dom.rebuild_in_place();
+
+        dom.in_runtime(|| {
+            // 1. Manually inject In-Memory DB
+            let db = Database::new_in_memory().expect("failed create memory db");
+
+            // This set() works because we are inside `in_runtime`
+            APP_STATE.write().db.set(Some(db.clone()));
+
+            // 2. Perform CRUD operations by manipulating signals manually to simulate the async actions
+            // (Since actual AppState methods are async and returning futures outside runtime context is tricky)
+
+            // Create
+            let args = CreateServerArgs {
+                name: "headless-test".to_string(),
+                server_type: "stdio".to_string(),
+                command: Some("echo".to_string()),
+                args: None,
+                url: None,
+                env: None,
+                description: None,
+            };
+            db.create_server(args).unwrap();
+
+            // Refresh (simulate what AppState::refresh_servers does)
+            let servers = db.get_servers().unwrap();
+            APP_STATE.write().servers.set(servers);
+
+            // Verify
+            let s_list = APP_STATE.read().servers.cloned();
+            assert_eq!(s_list.len(), 1);
+            assert_eq!(s_list[0].name, "headless-test");
+
+            // Delete
+            let id = s_list[0].id.clone();
+            db.delete_server(id).unwrap();
+            let servers_after = db.get_servers().unwrap();
+            APP_STATE.write().servers.set(servers_after);
+
+            let s_list_after = APP_STATE.read().servers.cloned();
+            assert_eq!(s_list_after.len(), 0);
+        });
+    }
 }

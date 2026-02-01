@@ -34,10 +34,10 @@ jobs:
             asset_suffix: linux-amd64.deb
             # Linux deb naming is usually handled by dx/dpkg, but we'll glob it specially
 
-          # - os: windows-latest
-          #   target: x86_64-pc-windows-msvc
-          #   platform: desktop
-          #   asset_suffix: windows-amd64.exe
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            platform: desktop
+            asset_suffix: windows-amd64.exe
 
           # - os: windows-latest
           #   target: aarch64-pc-windows-msvc
@@ -49,10 +49,10 @@ jobs:
           #   platform: desktop
           #   asset_suffix: macos-arm64.tar.gz
 
-          # - os: macos-13
-          #   target: x86_64-apple-darwin
-          #   platform: desktop
-          #   asset_suffix: macos-intel.tar.gz
+          - os: macos-13
+            target: x86_64-apple-darwin
+            platform: desktop
+            asset_suffix: macos-intel.tar.gz
 
     runs-on: ${{ matrix.os }}
 
