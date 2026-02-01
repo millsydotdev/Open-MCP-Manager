@@ -50,12 +50,12 @@ jobs:
           - os: macos-latest
             target: aarch64-apple-darwin
             platform: desktop
-            asset_suffix: macos-arm64.tar.gz
+            asset_suffix: macos-arm64.dmg
 
           - os: macos-15
             target: x86_64-apple-darwin
             platform: desktop
-            asset_suffix: macos-intel.tar.gz
+            asset_suffix: macos-intel.dmg
 
     runs-on: ${{ matrix.os }}
 
@@ -66,6 +66,10 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
+
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        run: brew install create-dmg
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -94,11 +98,20 @@ jobs:
           cd dist/bundle/windows
           mv *.exe ../../../open-mcp-manager-${{ matrix.asset_suffix }}
 
-      - name: Bundle MacOS Artifact
+      - name: Create MacOS DMG
         if: runner.os == 'macOS'
         run: |
           cd dist/bundle/macos
-          tar -czf ../../../open-mcp-manager-${{ matrix.asset_suffix }} *.app
+          create-dmg \
+            --volname "Open MCP Manager" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --icon "open-mcp-manager.app" 175 160 \
+            --hide-extension "open-mcp-manager.app" \
+            --app-drop-link 425 160 \
+            "../../../open-mcp-manager-${{ matrix.asset_suffix }}" \
+            "open-mcp-manager.app"
 
       # linux deb usually has version and arch in name, we can just copy it to root or upload from location
       # but to be consistent let's assume standard deb behavior and just glob it
@@ -110,5 +123,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
-            open-mcp-manager-${{ matrix.asset_suffix }}
+            open-mcp-manager-windows-amd64.exe
+            open-mcp-manager-macos-arm64.dmg
+            open-mcp-manager-macos-intel.dmg
             dist/bundle/linux/deb/*.deb
