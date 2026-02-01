@@ -19,6 +19,16 @@ impl Database {
         })
     }
 
+    // For testing purposes
+    #[allow(dead_code)]
+    pub fn new_in_memory() -> AppResult<Self> {
+        let conn = Connection::open_in_memory()?;
+        init_db_schema(&conn)?;
+        Ok(Self {
+            conn: Arc::new(Mutex::new(conn)),
+        })
+    }
+
     pub fn get_servers(&self) -> AppResult<Vec<McpServer>> {
         let conn = self
             .conn
@@ -205,4 +215,90 @@ fn init_db_schema(conn: &Connection) -> AppResult<()> {
         [],
     )?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashMap;
+
+    #[test]
+    fn test_create_and_get_server() {
+        let db = Database::new_in_memory().unwrap();
+
+        let args = CreateServerArgs {
+            name: "test-server".to_string(),
+            server_type: "stdio".to_string(),
+            command: Some("npx".to_string()),
+            args: Some(vec!["-y".to_string(), "test".to_string()]),
+            url: None,
+            env: Some(HashMap::from([("KEY".to_string(), "VALUE".to_string())])),
+            description: Some("Test server".to_string()),
+        };
+
+        let server = db.create_server(args).unwrap();
+        assert_eq!(server.name, "test-server");
+        assert_eq!(server.server_type, "stdio");
+        assert_eq!(server.env.unwrap().get("KEY"), Some(&"VALUE".to_string()));
+
+        let servers = db.get_servers().unwrap();
+        assert_eq!(servers.len(), 1);
+        assert_eq!(servers[0].id, server.id);
+    }
+
+    #[test]
+    fn test_update_server() {
+        let db = Database::new_in_memory().unwrap();
+        let args = CreateServerArgs {
+            name: "update-test".to_string(),
+            server_type: "stdio".to_string(),
+            command: Some("cmd".to_string()),
+            args: None,
+            url: None,
+            env: None,
+            description: None,
+        };
+        let server = db.create_server(args).unwrap();
+
+        let update_args = UpdateServerArgs {
+            name: Some("updated-name".to_string()),
+            server_type: None,
+            command: None,
+            args: None,
+            url: None,
+            env: None,
+            description: None,
+            is_active: Some(false),
+        };
+
+        let updated = db.update_server(server.id.clone(), update_args).unwrap();
+        assert_eq!(updated.name, "updated-name");
+        assert_eq!(updated.is_active, false);
+
+        let servers = db.get_servers().unwrap();
+        assert_eq!(servers[0].name, "updated-name");
+    }
+
+    #[test]
+    fn test_delete_server() {
+        let db = Database::new_in_memory().unwrap();
+        let args = CreateServerArgs {
+            name: "delete-test".to_string(),
+            server_type: "stdio".to_string(),
+            command: Some("cmd".to_string()),
+            args: None,
+            url: None,
+            env: None,
+            description: None,
+        };
+        let server = db.create_server(args).unwrap();
+
+        let servers_before = db.get_servers().unwrap();
+        assert_eq!(servers_before.len(), 1);
+
+        db.delete_server(server.id).unwrap();
+
+        let servers_after = db.get_servers().unwrap();
+        assert_eq!(servers_after.len(), 0);
+    }
 }

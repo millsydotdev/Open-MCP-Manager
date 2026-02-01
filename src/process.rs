@@ -232,3 +232,46 @@ impl McpProcess {
         Ok(res)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn test_jsonrpc_request_serialization() {
+        let req = JsonRpcRequest {
+            jsonrpc: "2.0".to_string(),
+            method: "test_method".to_string(),
+            params: json!({"key": "value"}),
+            id: 1,
+        };
+        let json_str = serde_json::to_string(&req).unwrap();
+        assert!(json_str.contains(r#""jsonrpc":"2.0""#));
+        assert!(json_str.contains(r#""method":"test_method""#));
+        assert!(json_str.contains(r#""id":1"#));
+        assert!(json_str.contains(r#""params":{"key":"value"}"#));
+    }
+
+    #[test]
+    fn test_jsonrpc_response_deserialization_success() {
+        let json_str = r#"{"jsonrpc": "2.0", "result": {"foo": "bar"}, "id": 1}"#;
+        let resp: JsonRpcResponse = serde_json::from_str(json_str).unwrap();
+        assert_eq!(resp.jsonrpc, "2.0");
+        assert_eq!(resp.id, Some(1));
+        assert!(resp.error.is_none());
+        assert_eq!(resp.result.unwrap(), json!({"foo": "bar"}));
+    }
+
+    #[test]
+    fn test_jsonrpc_response_deserialization_error() {
+        let json_str = r#"{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null}"#;
+        let resp: JsonRpcResponse = serde_json::from_str(json_str).unwrap();
+        assert_eq!(resp.jsonrpc, "2.0");
+        assert_eq!(resp.id, None);
+        assert!(resp.result.is_none());
+        let err = resp.error.unwrap();
+        assert_eq!(err["code"], -32600);
+        assert_eq!(err["message"], "Invalid Request");
+    }
+}
