@@ -11,7 +11,7 @@ pub fn ToastContainer() -> Element {
         div {
             class: "fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none",
             for note in notifications {
-                Toast { key: "{note.id}", notification: note }
+                Toast { key: "{note.id}", notification: note.clone() }
             }
         }
     }
