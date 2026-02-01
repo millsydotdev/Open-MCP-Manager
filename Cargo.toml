@@ -2,8 +2,14 @@
 name = "open-mcp-manager"
 version = "0.9.1"
 edition = "2021"
-authors = ["Millsy"]
+authors = ["Millsy.dev"]
 description = "A unified desktop manager for Model Context Protocol servers"
+license = "MIT"
+repository = "https://github.com/millsydotdev/Open-MCP-Manager"
+homepage = "https://github.com/millsydotdev/Open-MCP-Manager"
+readme = "README.md"
+keywords = ["mcp", "model-context-protocol", "desktop", "dioxus"]
+categories = ["development-tools", "gui"]
 
 [dependencies]
 # Dioxus 0.7 - The core UI framework
