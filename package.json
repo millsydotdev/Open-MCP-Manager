@@ -13,9 +13,9 @@
     "watch:css": "npx tailwindcss -i ./input.css -o ./public/tailwind.css --watch",
     "build": "npm run check-env && npm run build:css && dx bundle --platform desktop --release",
     "build:css": "npx tailwindcss -i ./input.css -o ./public/tailwind.css --minify",
-    "check": "cargo check",
-    "lint": "cargo clippy -- -D warnings",
-    "test": "cargo test",
+    "check": "cargo check --locked",
+    "lint": "cargo clippy --locked -- -D warnings",
+    "test": "cargo test --locked",
     "format": "cargo fmt",
     "version": "node scripts/sync-version.js",
     "release": "npm version patch && git push --follow-tags"
