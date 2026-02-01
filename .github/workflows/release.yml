@@ -84,7 +84,9 @@ jobs:
         uses: cargo-bins/cargo-binstall@main
 
       - name: Install Dioxus CLI
-        run: cargo binstall --no-confirm dioxus-cli@0.6.3
+        run: cargo binstall --no-confirm dioxus-cli@0.6.3 || cargo install dioxus-cli --version 0.6.3 --locked
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build
         run: dx bundle --platform ${{ matrix.platform }} --release
