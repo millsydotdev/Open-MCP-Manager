@@ -1,6 +1,6 @@
 use crate::db::Database;
 use crate::models::{
-    CreateServerArgs, McpServer, Notification, NotificationLevel, UpdateServerArgs,
+    CreateServerArgs, McpServer, Notification, NotificationLevel, RegistryItem, UpdateServerArgs,
 };
 use crate::process::{McpProcess, ProcessLog};
 use dioxus::prelude::*;
@@ -16,6 +16,7 @@ pub struct AppState {
     pub running_handlers: Signal<HashMap<String, Arc<McpProcess>>>,
     pub db: Signal<Option<Database>>,
     pub notifications: Signal<Vec<Notification>>, // New signal
+    pub community_servers: Signal<Vec<RegistryItem>>,
 }
 
 // Global signal
@@ -25,6 +26,7 @@ pub static APP_STATE: GlobalSignal<AppState> = Signal::global(|| AppState {
     running_handlers: Signal::new(HashMap::new()),
     db: Signal::new(None),
     notifications: Signal::new(Vec::new()),
+    community_servers: Signal::new(Vec::new()),
 });
 
 pub fn use_app_state() {

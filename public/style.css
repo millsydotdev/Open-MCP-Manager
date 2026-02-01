@@ -1,0 +1,351 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+/* =========================================
+   1. CSS Reset & Base Styles
+   ========================================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-width: 0;
+  border-style: solid;
+  border-color: var(--glass-border);
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  /* Prevent body scroll, handle in main container */
+}
+
+:root {
+  /* Color Palette - Premium Red/Black Theme */
+  --bg-dark: #09090b;
+  /* Zinc 950 - Main App Background */
+  --bg-sidebar: #000000;
+  /* Pure Black - Sidebar */
+  --bg-card: #18181b;
+  /* Zinc 900 - Cards/Panels */
+  --bg-hover: #27272a;
+  /* Zinc 800 - Hover States */
+
+  --primary: #dc2626;
+  /* Red 600 - Primary Actions */
+  --primary-hover: #b91c1c;
+  /* Red 700 */
+  --primary-glow: rgba(220, 38, 38, 0.4);
+
+  --text-main: #FFFFFF;
+  --text-muted: #a1a1aa;
+  /* Zinc 400 */
+  --text-dim: #52525b;
+  /* Zinc 600 */
+
+  --border-color: rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(24, 24, 27, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.05);
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* =========================================
+   2. Utilities & Glassmorphism
+   ========================================= */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-panel {
+  background: linear-gradient(145deg, rgba(39, 39, 42, 0.4) 0%, rgba(24, 24, 27, 0.2) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.clickable {
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.clickable:hover {
+  transform: translateY(-1px);
+}
+
+.clickable:active {
+  transform: translateY(0px);
+}
+
+/* =========================================
+   3. Custom Scrollbars (The Fix)
+   ========================================= */
+/* WebKit (Chrome, Edge, Tauri/WebView2) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #3f3f46;
+  /* Zinc 700 */
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  /* Padding effect */
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #52525b;
+  /* Zinc 600 */
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3f3f46 transparent;
+}
+
+/* =========================================
+   4. Animations
+   ========================================= */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* --- Manual Utility Overrides (for missing JIT classes) --- */
+
+/* Opacity Backgrounds */
+.bg-black-20 {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.bg-black-60 {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.bg-zinc-900-50 {
+  background-color: rgba(24, 24, 27, 0.5);
+}
+
+.bg-zinc-900-80 {
+  background-color: rgba(24, 24, 27, 0.8);
+}
+
+.bg-zinc-900-90 {
+  background-color: rgba(24, 24, 27, 0.9);
+}
+
+.bg-red-500-30 {
+  background-color: rgba(220, 38, 38, 0.3);
+}
+
+/* Opacity Borders */
+.border-white-5 {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.border-white-10 {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.border-red-500-30 {
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.border-red-500-50 {
+  border-color: rgba(220, 38, 38, 0.5);
+}
+
+/* Shadows */
+.shadow-glow-red {
+  box-shadow: 0 0 30px rgba(220, 38, 38, 0.15);
+}
+
+/* Backdrop Blur */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Gradients */
+.bg-gradient-app {
+  background: linear-gradient(to bottom right, var(--bg-dark), #111115);
+}
+
+/* Text Colors */
+.text-red-400 {
+  color: #f87171;
+}
+
+.text-zinc-400 {
+  color: #a1a1aa;
+}
+
+.text-zinc-500 {
+  color: #71717a;
+}
+
+.text-zinc-600 {
+  color: #52525b;
+}
+
+/* Focus Rings */
+.focus-ring-red:focus {
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.5);
+}
+
+/* =========================================
+   6. Custom Utilities (Refactored)
+   ========================================= */
+.bg-app-dark {
+  background-color: var(--bg-dark);
+}
+
+.bg-app-secondary {
+  background-color: #111115;
+}
+
+/* Keep specific if needed, or map to var */
+.bg-card-dark {
+  background-color: var(--bg-card);
+}
+
+.bg-white-5 {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.bg-white-8 {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.bg-white-10 {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.bg-black-20 {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.bg-black-30 {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.border-white-5 {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.border-white-10 {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.text-zinc-100 {
+  color: #f4f4f5;
+}
+
+.text-zinc-300 {
+  color: #d4d4d8;
+}
+
+.text-zinc-400 {
+  color: var(--text-muted);
+}
+
+.text-zinc-500 {
+  color: var(--text-dim);
+}
+
+.from-app-dark {
+  --tw-gradient-from: var(--bg-dark);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(9, 9, 11, 0));
+}
+
+.to-app-secondary {
+  --tw-gradient-to: #111115;
+}
+
+/* Gradient Text Legacy Support */
+.text-gradient {
+  background: linear-gradient(to right, var(--primary), #b91c1c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* =========================================
+   5. Form Elements Reset
+   ========================================= */
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: 100%;
+  background: transparent;
+  outline: none;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

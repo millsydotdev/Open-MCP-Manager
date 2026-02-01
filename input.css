@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* We can import our clean style.css here if we wanted to bundle it, 
+   but Dioxus loads them separately. 
+   So this file is just for generating the tailwind utilities. */
