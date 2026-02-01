@@ -2,7 +2,6 @@ use crate::models::{McpServer, Prompt, Resource, Tool};
 use crate::state::AppState;
 use crate::state::APP_STATE;
 use dioxus::prelude::*;
-use serde_json;
 
 #[derive(PartialEq, Clone, Props)]
 pub struct ServerConsoleProps {
@@ -26,15 +25,15 @@ pub fn ServerConsole(props: ServerConsoleProps) -> Element {
     let mut tool_error = use_signal(|| false);
     let mut active_resource_content = use_signal(|| None::<(String, String)>); // (uri, content)
 
-    let mut tools_list = use_signal(|| Vec::<Tool>::new());
-    let mut resources_list = use_signal(|| Vec::<Resource>::new());
-    let mut prompts_list = use_signal(|| Vec::<Prompt>::new());
+    let mut tools_list = use_signal(Vec::<Tool>::new);
+    let mut resources_list = use_signal(Vec::<Resource>::new);
+    let mut prompts_list = use_signal(Vec::<Prompt>::new);
     let mut error_msg = use_signal(|| None::<String>);
     let mut is_loading = use_signal(|| false);
     let mut ping_result = use_signal(|| None::<Result<u128, String>>);
 
     // Access the global processes map to find the signal for this server's logs
-    let processes = APP_STATE.read().processes.clone();
+    let processes = APP_STATE.read().processes;
     let srv_id = props.server.id.clone();
     let log_signal = use_memo(move || {
         let map = processes.read();

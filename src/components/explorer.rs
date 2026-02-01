@@ -400,11 +400,11 @@ pub fn detect_config_from_url(url: &str) -> Option<CreateServerArgs> {
 }
 
 pub fn Explorer(props: ExplorerProps) -> Element {
-    let mut query = use_signal(|| String::new());
+    let mut query = use_signal(String::new);
     let mut all_items = use_signal(get_official_registry); // Start with local
     let mut results = use_signal(get_official_registry); // Display local initially
     let mut loading = use_signal(|| true); // Start true, fetch will finish
-    let mut url_input = use_signal(|| String::new());
+    let mut url_input = use_signal(String::new);
 
     // Fetch Dynamic Registry
     use_future(move || async move {
@@ -419,7 +419,7 @@ pub fn Explorer(props: ExplorerProps) -> Element {
     let mut active_wizard_item = use_signal(|| None::<RegistryItem>);
     let mut active_wizard_step = use_signal(|| 0);
     // Stores the collected inputs. Key = Env Var Name, Value = User Input
-    let mut wizard_env_data = use_signal(|| std::collections::HashMap::<String, String>::new());
+    let mut wizard_env_data = use_signal(std::collections::HashMap::<String, String>::new);
 
     // Heuristic detection logic
     let install_from_url = move |_| {

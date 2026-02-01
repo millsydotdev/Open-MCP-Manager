@@ -10,7 +10,7 @@ pub struct ServerListProps {
 }
 
 pub fn ServerList(props: ServerListProps) -> Element {
-    let servers = APP_STATE.read().servers.clone();
+    let servers = APP_STATE.read().servers;
 
     rsx! {
         div {
