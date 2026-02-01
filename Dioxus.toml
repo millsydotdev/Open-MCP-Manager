@@ -2,16 +2,14 @@
 name = "open-mcp-manager"
 default_platform = "desktop"
 
-[web.app]
-title = "Open MCP Manager"
-
-[web.resource]
-style = ["tailwind.css", "style.css"]
+[bundle]
+identifier = "dev.millsy.openmcpmanager"
+icon = ["public/icon.png"]
+category = "Productivity"
+resources = ["public/*"]
 
 [desktop]
 window_resizable = true
 window_title = "Open MCP Manager"
 window_width = 1200
 window_height = 800
-# transparent = true # For custom titlebar later
-category = "Productivity"

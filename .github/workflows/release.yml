@@ -80,7 +80,7 @@ jobs:
         uses: cargo-bins/cargo-binstall@main
 
       - name: Install Dioxus CLI
-        run: cargo binstall --no-confirm dioxus-cli
+        run: cargo binstall --no-confirm dioxus-cli@0.6.3
 
       - name: Build
         run: dx bundle --platform ${{ matrix.platform }} --release
