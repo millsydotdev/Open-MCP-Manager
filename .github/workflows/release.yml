@@ -13,12 +13,13 @@ jobs:
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -28,6 +29,7 @@ jobs:
   build-release:
     name: Build Release
     needs: create-release
+    if: always() && (needs.create-release.result == 'success' || needs.create-release.result == 'skipped')
     strategy:
       matrix:
         include:
@@ -89,7 +91,7 @@ jobs:
         run: npm install
 
       - name: Install cargo-binstall
-        uses: cargo-bins/cargo-binstall@main
+        uses: cargo-bins/cargo-binstall@v1.10.20
 
       - name: Install Dioxus CLI
         run: cargo binstall --no-confirm dioxus-cli@0.6.3 || cargo install dioxus-cli --version 0.6.3 --locked
@@ -125,17 +127,42 @@ jobs:
             "../../../open-mcp-manager-${{ matrix.asset_suffix }}" \
             "open-mcp-manager.app"
 
-      # linux deb usually has version and arch in name, we can just copy it to root or upload from location
-      # but to be consistent let's assume standard deb behavior and just glob it
+      - name: Rename Linux Artifact
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          cd dist/bundle/linux/deb
+          DEB_FILE=$(ls *.deb 2>/dev/null | head -n 1)
+          if [ -z "$DEB_FILE" ]; then
+            echo "ERROR: No .deb file found"
+            exit 1
+          fi
+          mv "$DEB_FILE" "../../../../open-mcp-manager-${{ matrix.asset_suffix }}"
+
+      - name: Verify artifact exists
+        shell: bash
+        run: |
+          if [ ! -f "open-mcp-manager-${{ matrix.asset_suffix }}" ]; then
+            echo "ERROR: Artifact not found!"
+            ls -la
+            exit 1
+          fi
+          echo "Artifact: open-mcp-manager-${{ matrix.asset_suffix }}"
+          ls -lh "open-mcp-manager-${{ matrix.asset_suffix }}"
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        with:
+          name: open-mcp-manager-${{ matrix.asset_suffix }}
+          path: open-mcp-manager-${{ matrix.asset_suffix }}
+          retention-days: 7
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: |
-            open-mcp-manager-windows-amd64.exe
-            open-mcp-manager-macos-arm64.dmg
-            open-mcp-manager-macos-intel.dmg
-            dist/bundle/linux/deb/*.deb
+          files: open-mcp-manager-${{ matrix.asset_suffix }}
+          fail_on_unmatched_files: true
