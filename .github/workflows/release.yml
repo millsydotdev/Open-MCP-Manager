@@ -92,7 +92,7 @@ jobs:
 
       - name: Install Dioxus CLI
         shell: bash
-        run: cargo install dioxus-cli --version 0.6.3 --locked
+        run: cargo install dioxus-cli --version 0.7.3 --locked
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
