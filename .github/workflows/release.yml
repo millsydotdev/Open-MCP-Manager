@@ -90,11 +90,9 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Install cargo-binstall
-        uses: cargo-bins/cargo-binstall@v1.10.20
-
       - name: Install Dioxus CLI
-        run: cargo binstall --no-confirm dioxus-cli@0.6.3 || cargo install dioxus-cli --version 0.6.3 --locked
+        shell: bash
+        run: cargo install dioxus-cli --version 0.6.3 --locked
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
