@@ -3096,7 +3096,7 @@ checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
 
 [[package]]
 name = "open-mcp-manager"
-version = "1.0.0"
+version = "0.9.1"
 dependencies = [
  "anyhow",
  "chrono",
@@ -3104,6 +3104,7 @@ dependencies = [
  "dioxus-logger",
  "dioxus-ssr",
  "dirs",
+ "futures-util",
  "reqwest 0.13.1",
  "rusqlite",
  "serde",
@@ -3753,6 +3754,7 @@ dependencies = [
  "bytes",
  "encoding_rs",
  "futures-core",
+ "futures-util",
  "h2",
  "http",
  "http-body",
@@ -3774,12 +3776,14 @@ dependencies = [
  "sync_wrapper",
  "tokio",
  "tokio-rustls",
+ "tokio-util",
  "tower",
  "tower-http",
  "tower-service",
  "url",
  "wasm-bindgen",
  "wasm-bindgen-futures",
+ "wasm-streams",
  "web-sys",
 ]
 

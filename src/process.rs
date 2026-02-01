@@ -1,3 +1,4 @@
+use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -36,6 +37,19 @@ pub struct McpProcess {
     pub stdin_tx: mpsc::Sender<String>,
     pub pending_requests: Arc<Mutex<HashMap<u64, oneshot::Sender<Result<Value, String>>>>>,
     pub next_request_id: Arc<Mutex<u64>>,
+}
+
+pub struct McpSseClient {
+    pub url: String,
+    pub request_url: Arc<Mutex<Option<String>>>,
+    pub client: reqwest::Client,
+    pub pending_requests: Arc<Mutex<HashMap<u64, oneshot::Sender<Result<Value, String>>>>>,
+    pub next_request_id: Arc<Mutex<u64>>,
+}
+
+pub enum McpHandler {
+    Stdio(McpProcess),
+    Sse(McpSseClient),
 }
 
 impl McpProcess {
@@ -230,6 +244,244 @@ impl McpProcess {
         let res: crate::models::ReadResourceResult =
             serde_json::from_value(val).map_err(|e| e.to_string())?;
         Ok(res)
+    }
+}
+
+impl McpSseClient {
+    pub async fn start(url: String, log_tx: mpsc::Sender<ProcessLog>) -> Result<Self, String> {
+        let client = reqwest::Client::new();
+        let request_url = Arc::new(Mutex::new(None));
+        let pending_requests = Arc::new(Mutex::new(HashMap::<
+            u64,
+            oneshot::Sender<Result<Value, String>>,
+        >::new()));
+        let next_request_id = Arc::new(Mutex::new(1));
+
+        let request_url_clone = request_url.clone();
+        let pending_requests_clone = pending_requests.clone();
+        let log_tx_clone = log_tx.clone();
+        let client_clone = client.clone();
+        let url_clone = url.clone();
+
+        tokio::spawn(async move {
+            let res = match client_clone.get(&url_clone).send().await {
+                Ok(r) => r,
+                Err(e) => {
+                    let _ = log_tx_clone
+                        .send(ProcessLog::Stderr(format!(
+                            "Failed to connect to SSE: {}",
+                            e
+                        )))
+                        .await;
+                    return;
+                }
+            };
+
+            let mut stream = res.bytes_stream();
+            while let Some(item) = stream.next().await {
+                let bytes = match item {
+                    Ok(b) => b,
+                    Err(e) => {
+                        let _ = log_tx_clone
+                            .send(ProcessLog::Stderr(format!("SSE stream error: {}", e)))
+                            .await;
+                        break;
+                    }
+                };
+
+                let text = String::from_utf8_lossy(&bytes);
+                for line in text.lines() {
+                    if line.starts_with("event: endpoint") {
+                        // Wait for next line "data: ..."
+                    } else if line.starts_with("data: ") {
+                        let data = &line[6..];
+                        if data.starts_with("http") {
+                            let mut req_url = request_url_clone.lock().await;
+                            *req_url = Some(data.to_string());
+                            let _ = log_tx_clone
+                                .send(ProcessLog::Stdout(format!(
+                                    "Connected to endpoint: {}",
+                                    data
+                                )))
+                                .await;
+                        } else if let Ok(response) = serde_json::from_str::<JsonRpcResponse>(data) {
+                            if let Some(req_id) = response.id {
+                                let mut pending = pending_requests_clone.lock().await;
+                                if let Some(tx) = pending.remove(&req_id) {
+                                    if let Some(error) = response.error {
+                                        let _ = tx.send(Err(error.to_string()));
+                                    } else {
+                                        let _ = tx.send(Ok(response.result.unwrap_or(Value::Null)));
+                                    }
+                                }
+                            }
+                        } else {
+                            let _ = log_tx_clone
+                                .send(ProcessLog::Stdout(data.to_string()))
+                                .await;
+                        }
+                    } else if !line.is_empty() {
+                        let _ = log_tx_clone
+                            .send(ProcessLog::Stdout(line.to_string()))
+                            .await;
+                    }
+                }
+            }
+        });
+
+        Ok(McpSseClient {
+            url,
+            request_url,
+            client,
+            pending_requests,
+            next_request_id,
+        })
+    }
+
+    pub async fn send_request(&self, method: &str, params: Option<Value>) -> Result<Value, String> {
+        let req_url = {
+            let lock = self.request_url.lock().await;
+            lock.clone().ok_or("Endpoint not yet received")?
+        };
+
+        let id;
+        {
+            let mut id_lock = self.next_request_id.lock().await;
+            id = *id_lock;
+            *id_lock += 1;
+        }
+
+        let request = JsonRpcRequest {
+            jsonrpc: "2.0".to_string(),
+            method: method.to_string(),
+            params: params.unwrap_or(serde_json::json!({})),
+            id,
+        };
+
+        let (tx, rx) = oneshot::channel();
+        {
+            let mut pending = self.pending_requests.lock().await;
+            pending.insert(id, tx);
+        }
+
+        let res = self
+            .client
+            .post(&req_url)
+            .json(&request)
+            .send()
+            .await
+            .map_err(|e| e.to_string())?;
+
+        if !res.status().is_success() {
+            let mut pending = self.pending_requests.lock().await;
+            pending.remove(&id);
+            return Err(format!("POST failed with status: {}", res.status()));
+        }
+
+        match rx.await {
+            Ok(result) => result,
+            Err(_) => Err("Request cancelled or connection lost".to_string()),
+        }
+    }
+
+    pub async fn list_tools(&self) -> Result<Vec<crate::models::Tool>, String> {
+        let val = self.send_request("tools/list", None).await?;
+        let res: crate::models::ListToolsResult =
+            serde_json::from_value(val).map_err(|e| e.to_string())?;
+        Ok(res.tools)
+    }
+
+    pub async fn list_resources(&self) -> Result<Vec<crate::models::Resource>, String> {
+        let val = self.send_request("resources/list", None).await?;
+        let res: crate::models::ListResourcesResult =
+            serde_json::from_value(val).map_err(|e| e.to_string())?;
+        Ok(res.resources)
+    }
+
+    pub async fn list_prompts(&self) -> Result<Vec<crate::models::Prompt>, String> {
+        let val = self.send_request("prompts/list", None).await?;
+        let res: crate::models::ListPromptsResult =
+            serde_json::from_value(val).map_err(|e| e.to_string())?;
+        Ok(res.prompts)
+    }
+
+    pub async fn call_tool(
+        &self,
+        name: String,
+        arguments: serde_json::Value,
+    ) -> Result<crate::models::CallToolResult, String> {
+        let params = serde_json::json!({
+            "name": name,
+            "arguments": arguments
+        });
+        let val = self.send_request("tools/call", Some(params)).await?;
+        let res: crate::models::CallToolResult =
+            serde_json::from_value(val).map_err(|e| e.to_string())?;
+        Ok(res)
+    }
+
+    pub async fn read_resource(
+        &self,
+        uri: String,
+    ) -> Result<crate::models::ReadResourceResult, String> {
+        let params = serde_json::json!({
+            "uri": uri
+        });
+        let val = self.send_request("resources/read", Some(params)).await?;
+        let res: crate::models::ReadResourceResult =
+            serde_json::from_value(val).map_err(|e| e.to_string())?;
+        Ok(res)
+    }
+}
+
+impl McpHandler {
+    pub async fn list_tools(&self) -> Result<Vec<crate::models::Tool>, String> {
+        match self {
+            McpHandler::Stdio(p) => p.list_tools().await,
+            McpHandler::Sse(p) => p.list_tools().await,
+        }
+    }
+
+    pub async fn list_resources(&self) -> Result<Vec<crate::models::Resource>, String> {
+        match self {
+            McpHandler::Stdio(p) => p.list_resources().await,
+            McpHandler::Sse(p) => p.list_resources().await,
+        }
+    }
+
+    pub async fn list_prompts(&self) -> Result<Vec<crate::models::Prompt>, String> {
+        match self {
+            McpHandler::Stdio(p) => p.list_prompts().await,
+            McpHandler::Sse(p) => p.list_prompts().await,
+        }
+    }
+
+    pub async fn call_tool(
+        &self,
+        name: String,
+        arguments: serde_json::Value,
+    ) -> Result<crate::models::CallToolResult, String> {
+        match self {
+            McpHandler::Stdio(p) => p.call_tool(name, arguments).await,
+            McpHandler::Sse(p) => p.call_tool(name, arguments).await,
+        }
+    }
+
+    pub async fn read_resource(
+        &self,
+        uri: String,
+    ) -> Result<crate::models::ReadResourceResult, String> {
+        match self {
+            McpHandler::Stdio(p) => p.read_resource(uri).await,
+            McpHandler::Sse(p) => p.read_resource(uri).await,
+        }
+    }
+
+    pub async fn kill(&self) -> Result<(), String> {
+        match self {
+            McpHandler::Stdio(p) => p.kill().await,
+            McpHandler::Sse(_) => Ok(()), // SSE just stops when dropped or connection closes
+        }
     }
 }
 
@@ -490,7 +742,8 @@ mod tests {
 
         let resp: JsonRpcResponse = serde_json::from_str(json_str).unwrap();
         let result = resp.result.unwrap();
-        let resources_result: crate::models::ListResourcesResult = serde_json::from_value(result).unwrap();
+        let resources_result: crate::models::ListResourcesResult =
+            serde_json::from_value(result).unwrap();
         assert_eq!(resources_result.resources.len(), 1);
         assert_eq!(resources_result.resources[0].uri, "file:///test.txt");
     }
@@ -531,8 +784,12 @@ mod tests {
 
         let resp: JsonRpcResponse = serde_json::from_str(json_str).unwrap();
         let result = resp.result.unwrap();
-        let read_result: crate::models::ReadResourceResult = serde_json::from_value(result).unwrap();
+        let read_result: crate::models::ReadResourceResult =
+            serde_json::from_value(result).unwrap();
         assert_eq!(read_result.contents.len(), 1);
-        assert_eq!(read_result.contents[0].text, Some("File contents here".to_string()));
+        assert_eq!(
+            read_result.contents[0].text,
+            Some("File contents here".to_string())
+        );
     }
 }

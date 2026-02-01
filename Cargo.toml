@@ -1,6 +1,6 @@
 [package]
 name = "open-mcp-manager"
-version = "1.0.0"
+version = "0.9.1"
 edition = "2021"
 authors = ["Millsy"]
 description = "A unified desktop manager for Model Context Protocol servers"
@@ -27,8 +27,9 @@ thiserror = "2"
 tracing = "0.1"
 anyhow = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
-reqwest = { version = "0.13.1", features = ["json"] }
+reqwest = { version = "0.13.1", features = ["json", "stream"] }
 urlencoding = "2.1"
+futures-util = "0.3"
 
 # Future 3D paths (Adding wgpu just in case, though optional for now)
 # wgpu = "24.0" 

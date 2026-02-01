@@ -1,34 +1,35 @@
 ## Project Summary
-A comprehensive Model Context Protocol (MCP) manager that allows users to manage, configure, and monitor MCP servers. It provides a centralized dashboard and facilitates integration with various editors via a unified MCP Hub.
+
+A native desktop Model Context Protocol (MCP) manager. It allows users to manage, configure, and monitor MCP servers via a centralized Rust-powered dashboard. Features include a dynamic server registry, real-time inspector, and configuration export for Claude Desktop.
 
 ## Tech Stack
-- Framework: Next.js 15+ (App Router)
-- Language: TypeScript
-- Database: Supabase
-- MCP: @modelcontextprotocol/sdk
-- Styling: Tailwind CSS
-- Motion: Framer Motion
-- Icons: Lucide React
+
+- **Framework**: Dioxus 0.6+ (Rust Desktop)
+- **Language**: Rust 2021 Edition
+- **Database**: SQLite (via `rusqlite` and `r2d2`)
+- **Async Runtime**: Tokio
+- **Styling**: Vanilla CSS (Premium Dark Theme)
+- **Serialization**: Serde (JSON/TOML)
 
 ## Architecture
-- `src/app/api/mcp/sse`: Central MCP Hub endpoint (SSE)
-- `src/app/api/mcp/message`: Message handling for the Hub
-- `src/lib/mcp-router.ts`: Core logic for aggregating and namespacing child MCP servers
-- `src/components`: UI components (ServerForm, ServerCard, Explorer, ConfigViewer)
-- `src/lib/types.ts`: Extended MCP types supporting both `stdio` and `sse` transports
 
-## User Preferences
-- Modern, distinctive UI with smooth motion
-- Dark mode support
-- Centralized "One MCP" editor integration
+- `src/main.rs`: Entry point and desktop window configuration.
+- `src/app.rs`: Main application logic and routing.
+- `src/state.rs`: Global application state and async task management.
+- `src/process.rs`: Logic for spawning and managing MCP server processes (stdio/sse).
+- `src/db.rs`: Database schema and persistence layer for servers and registry cache.
+- `src/models.rs`: Shared data structures for MCP protocol and internal state.
+- `src/components/`: Reusable UI components (Explorer, ConfigViewer, ServerConsole, etc.).
 
-## Project Guidelines
-- Support both `stdio` and `sse` MCP server types
-- Enable/Disable servers via `is_active` toggle
-- Namespace tools in the Hub using `server_name__tool_name` format
-- Provide `claude_desktop_config.json` templates in both Hub and Direct modes
+## Project Patterns
 
-## Common Patterns
-- Tool namespacing: `[server_name]__[original_tool_name]`
-- Hub transport: SSE for editor communication
-- Child transport: SSE (remote) or stdio (local)
+- **Process Management**: Servers are spawned as child processes. Stdio is handled via async pipes.
+- **State Synchronization**: Uses Dioxus signals and global state for reactive UI updates.
+- **Registry**: Fetches and caches community/official MCP servers from GitHub, NPM, and PyPI.
+- **Unified Build**: Use `npm run dev|build|check|test` to manage the lifecycle.
+
+## Development Guidelines
+
+- Always ensure `npm run check` passes before committing.
+- Version synchronization between `package.json` and `Cargo.toml` is handled by `npm version`.
+- Keep the UI premium with consistent HSL color tokens in `public/style.css`.

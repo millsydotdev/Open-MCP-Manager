@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
 #[component]
-pub fn Sidebar() -> Element {
+pub fn Sidebar(active_tab: String, on_tab_change: EventHandler<String>) -> Element {
     rsx! {
         aside {
             class: "w-72 flex flex-col glass border-r-0 border-r border-white-5 relative z-10",
@@ -26,9 +26,30 @@ pub fn Sidebar() -> Element {
             // Nav
             nav {
                 class: "flex-1 p-4 space-y-2 mt-4",
-                SidebarLink { label: "Servers", icon: "server", active: true }
-                SidebarLink { label: "Settings", icon: "cog", active: false }
-                SidebarLink { label: "Logs", icon: "terminal", active: false }
+                SidebarLink {
+                    label: "Dashboard",
+                    icon: "server",
+                    active: active_tab == "dashboard",
+                    on_click: move |_| on_tab_change.call("dashboard".to_string())
+                }
+                SidebarLink {
+                    label: "Research Hub",
+                    icon: "lightbulb",
+                    active: active_tab == "research",
+                    on_click: move |_| on_tab_change.call("research".to_string())
+                }
+                SidebarLink {
+                    label: "Settings",
+                    icon: "cog",
+                    active: active_tab == "settings_tab", // Renamed to avoid confusion with show_settings modal
+                    on_click: move |_| on_tab_change.call("settings_tab".to_string())
+                }
+                SidebarLink {
+                    label: "Logs",
+                    icon: "terminal",
+                    active: active_tab == "logs",
+                    on_click: move |_| on_tab_change.call("logs".to_string())
+                }
             }
 
             // Footer
@@ -51,12 +72,13 @@ pub fn Sidebar() -> Element {
 }
 
 #[component]
-fn SidebarLink(label: String, icon: String, active: bool) -> Element {
-    // Icons (using simple characters/emojis for now or could potentiall use svg paths if we want consistency)
-    // For this rewrite I'll use simple mapping or SVG paths. Let's stick to simple text/emoji or better yet, SVG paths.
-    // Actually, let's use Lucide-like SVG icons inline for maximum quality.
-
+fn SidebarLink(label: String, icon: String, active: bool, on_click: EventHandler<()>) -> Element {
     let icon_svg = match icon.as_str() {
+        "lightbulb" => rsx! {
+            svg { class: "w-5 h-5", fill: "none", view_box: "0 0 24 24", stroke: "currentColor", stroke_width: "2",
+                path { stroke_linecap: "round", stroke_linejoin: "round", d: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" }
+            }
+        },
         "server" => rsx! {
             svg { class: "w-5 h-5", fill: "none", view_box: "0 0 24 24", stroke: "currentColor", stroke_width: "2",
                 path { d: "M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" }
@@ -87,7 +109,8 @@ fn SidebarLink(label: String, icon: String, active: bool) -> Element {
 
     rsx! {
         div {
-            class: "{base_classes} {active_classes}",
+            class: format!("{} {}", base_classes, active_classes),
+            onclick: move |_| on_click.call(()),
             div {
                 class: format!("transition-transform duration-200 group-hover:scale-110 {}", if active { "text-red-500" } else { "text-zinc-500 group-hover:text-zinc-300" }),
                 {icon_svg}

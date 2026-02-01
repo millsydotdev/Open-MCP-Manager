@@ -12,6 +12,7 @@ pub fn App() -> Element {
     let mut show_console = use_signal(|| None::<McpServer>);
     let mut show_settings = use_signal(|| None::<Option<McpServer>>); // None=Closed, Some(None)=Add, Some(Some(s))=Edit
     let mut show_config = use_signal(|| false);
+    let mut active_tab = use_signal(|| "dashboard".to_string());
 
     let open_console = move |server: McpServer| {
         show_console.set(Some(server));
@@ -76,7 +77,10 @@ pub fn App() -> Element {
 
             ToastContainer {}
 
-            Sidebar {}
+            Sidebar {
+                active_tab: active_tab(),
+                on_tab_change: move |tab| active_tab.set(tab)
+            }
 
             main {
                 class: "flex-1 flex flex-col relative min-w-0 bg-gradient-to-br from-app-dark to-app-secondary",
@@ -89,9 +93,16 @@ pub fn App() -> Element {
 
                 div {
                     class: "flex-1 overflow-y-auto p-8 scroll-smooth z-0 custom-scrollbar",
-                    ServerList {
-                        on_open_console: open_console,
-                        on_edit_server: edit_server
+                    match active_tab().as_str() {
+                        "research" => rsx! {
+                            crate::components::Research {}
+                        },
+                        _ => rsx! {
+                            ServerList {
+                                on_open_console: open_console,
+                                on_edit_server: edit_server
+                            }
+                        }
                     }
                 }
             }
