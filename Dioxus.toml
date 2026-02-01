@@ -6,7 +6,7 @@ default_platform = "desktop"
 title = "Open MCP Manager"
 
 [web.resource]
-style = ["public/style.css"]
+style = ["tailwind.css", "style.css"]
 
 [desktop]
 window_resizable = true

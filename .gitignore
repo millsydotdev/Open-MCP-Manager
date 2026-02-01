@@ -8,3 +8,19 @@
 .env
 .vscode
 .DS_Store
+node_modules
+
+# Node
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editors
+.idea/
+*.swp
+*.swo

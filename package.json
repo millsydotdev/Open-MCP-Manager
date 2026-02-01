@@ -1,0 +1,33 @@
+{
+  "name": "open-mcp-manager",
+  "version": "1.0.0",
+  "description": "A clean, native desktop application for managing [Model Context Protocol (MCP)](https://modelcontextprotocol.io) servers, built with Rust and Dioxus.",
+  "main": "tailwind.config.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "dev": "dx serve --platform desktop",
+    "build": "dx bundle --platform desktop --release",
+    "check": "cargo check",
+    "lint": "cargo clippy -- -D warnings",
+    "test": "cargo test",
+    "format": "cargo fmt",
+    "version": "node scripts/sync-version.js",
+    "release": "npm version patch && git push --follow-tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/millsydotdev/Open-MCP-Manager.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/millsydotdev/Open-MCP-Manager/issues"
+  },
+  "homepage": "https://github.com/millsydotdev/Open-MCP-Manager#readme",
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}

@@ -3,14 +3,8 @@
 use dioxus::prelude::*;
 use dioxus_logger::tracing;
 
-mod app;
-mod components;
-mod db;
-mod models;
-mod process;
-mod state;
-
-use app::App;
+// Use the library crate
+use open_mcp_manager::app::App;
 
 fn main() {
     // Initialize logging
@@ -18,5 +12,15 @@ fn main() {
     tracing::info!("starting app");
 
     // Launch the Dioxus Desktop app
-    LaunchBuilder::desktop().launch(App);
+    // Launch the Dioxus Desktop app
+    LaunchBuilder::desktop()
+        .with_cfg(dioxus::desktop::Config::new().with_custom_head(format!(
+            r#"
+                <style>{}</style>
+                <style>{}</style>
+            "#,
+            include_str!("../public/tailwind.css"),
+            include_str!("../public/style.css")
+        )))
+        .launch(App);
 }

@@ -1,70 +1,68 @@
 # Contributing to Open MCP Manager
 
-Thank you for your interest in contributing to Open MCP Manager! We welcome contributions from the community to help make this the best desktop manager for MCP servers.
+First off, thank you for considering contributing to Open MCP Manager! It's people like you who make this tool better for everyone.
 
-## Getting Started
+## 🛠️ Development Setup
 
 ### Prerequisites
 
-- **Rust**: Ensure you have the latest stable version of Rust installed.
-- **Dioxus CLI**: Install with `cargo install dioxus-cli`.
-- **Tailwind CSS**: Required for styling.
+- **Rust**: Latest stable version.
+- **Dioxus CLI**: `cargo install dioxus-cli`.
+- **Node.js & npm**: Required for our unified build scripts.
 
-### Building the Project
+### Local Development Workflow
 
-1. Clone the repository:
+We use `npm` to orchestrate our Rust development tasks.
+
+1. **Clone the Repository**
 
    ```bash
    git clone https://github.com/millsydotdev/Open-MCP-Manager.git
    cd Open-MCP-Manager
    ```
 
-2. Run the development server:
+2. **Install Dependencies**
 
    ```bash
-   dx serve
+   npm install
    ```
 
-3. Run tests:
+3. **Spin up the Dev Server**
 
    ```bash
-   cargo test
+   npm run dev
    ```
 
-## Contributing Guidelines
+4. **Run Quality Checks**
+   Before submitting a PR, please ensure all checks pass:
 
-### Reporting Bugs
+   ```bash
+   npm run lint
+   npm run test
+   npm run check
+   ```
 
-Please use the **Issues** tab to report bugs. Include:
+## 🤝 How to Contribute
 
-- A clear description of the issue.
-- Steps to reproduce.
-- Expected vs. actual behavior.
-- Screenshots if applicable.
-- Using the `bug` label.
+### Reporting Issues
 
-### Feature Requests
-
-Have an idea? Open an issue with the `feature-request` label. Describe:
-
-- The problem you are solving.
-- Your proposed solution.
+Use the [GitHub Issues](https://github.com/millsydotdev/Open-MCP-Manager/issues) to report bugs or request features. Please provide as much context as possible.
 
 ### Pull Requests
 
-1. Fork the repository.
-2. Create a new branch for your feature (`git checkout -b feature/amazing-feature`).
-3. Commit your changes.
-4. Push to the branch.
-5. Open a Pull Request.
+1. Fork the repo and create your branch from `main`.
+2. If you've added code that should be tested, add tests.
+3. Ensure the test suite passes.
+4. Issue that pull request!
 
-Please ensure your code passes `cargo check` and `cargo fmt` before submitting.
+## 📜 Code of Conduct
 
-## Style Guide
+We expect all contributors to adhere to our [Code of Conduct](CODE_OF_CONDUCT.md).
 
-- We use standard Rust formatting (`cargo fmt`).
-- Ensure no clippy warnings remain (`cargo clippy`).
+## 💬 Community
 
-## Community
+Questions? Feature ideas? Join the conversation in [GitHub Discussions](https://github.com/millsydotdev/Open-MCP-Manager/discussions).
 
-Join our [Discussions](https://github.com/millsydotdev/Open-MCP-Manager/discussions) to talk about development, ideas, and more.
+---
+
+*Happy Coding!*

@@ -64,37 +64,22 @@ pub fn App() -> Element {
     };
 
     rsx! {
-        style {
-            "
-            @keyframes fadeInUp {{
-                from {{ opacity: 0; transform: translateY(20px); }}
-                to {{ opacity: 1; transform: translateY(0); }}
-            }}
-            @keyframes scaleIn {{
-                from {{ opacity: 0; transform: scale(0.95); }}
-                to {{ opacity: 1; transform: scale(1); }}
-            }}
-            .animate-fade-in-up {{
-                animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-                opacity: 0; /* Star hidden */
-            }}
-            .animate-scale-in {{
-                animation: scaleIn 0.2s ease-out forwards;
-            }}
-            "
-        }
-        link { rel: "stylesheet", href: "https://unpkg.com/tailwindcss@^3.0/dist/tailwind.min.css" }
-        // Add some custom scrollbar css if needed, or rely on tailwind plugin if configured.
+        // Tailwind
+        // Local Tailwind (Static v2)
+        link { rel: "stylesheet", href: "tailwind.css" }
+
+        // Custom Styles (Fonts, Variables, Glassmorphism)
+        link { rel: "stylesheet", href: "style.css" }
 
         div {
-            class: "flex h-screen bg-gray-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-sans overflow-hidden transition-colors duration-200 relative",
+            class: "flex h-screen bg-app-dark text-white font-sans overflow-hidden relative selection:bg-red-500/30",
 
             ToastContainer {}
 
             Sidebar {}
 
             main {
-                class: "flex-1 flex flex-col relative min-w-0",
+                class: "flex-1 flex flex-col relative min-w-0 bg-gradient-to-br from-app-dark to-app-secondary",
 
                 Navbar {
                     on_add_server: move |_| show_settings.set(Some(None)),
@@ -103,7 +88,7 @@ pub fn App() -> Element {
                 }
 
                 div {
-                    class: "flex-1 overflow-y-auto p-6 scroll-smooth",
+                    class: "flex-1 overflow-y-auto p-8 scroll-smooth z-0 custom-scrollbar",
                     ServerList {
                         on_open_console: open_console,
                         on_edit_server: edit_server

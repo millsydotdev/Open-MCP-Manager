@@ -1,6 +1,6 @@
 [package]
 name = "open-mcp-manager"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 authors = ["Millsy"]
 description = "A unified desktop manager for Model Context Protocol servers"
@@ -28,6 +28,7 @@ tracing = "0.1"
 anyhow = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 reqwest = { version = "0.13.1", features = ["json"] }
+urlencoding = "2.1"
 
 # Future 3D paths (Adding wgpu just in case, though optional for now)
 # wgpu = "24.0" 
@@ -37,3 +38,6 @@ lto = true
 opt-level = 3
 codegen-units = 1
 strip = true
+
+[dev-dependencies]
+dioxus-ssr = "0.6"
