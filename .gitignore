@@ -5,22 +5,36 @@
 *.db
 *.db-shm
 *.db-wal
+
+# Environment & Secrets
 .env
-.vscode
+.env.*
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
 .DS_Store
-node_modules
-
-# Node
-npm-debug.log
-yarn-error.log
-pnpm-debug.log
-
-# Windows
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# Editors
-.idea/
-*.swp
-*.swo
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Generated files
+clippy_report.txt
+*.log
+
+# Local tool configs
+.claude/
+.agent/
+
+# Temp scripts
+fix_icon.*

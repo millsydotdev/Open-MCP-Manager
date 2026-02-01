@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(dir /s \"c:\\\\Users\\\\Millsy\\\\Documents\\\\GitHub\\\\Open-MCP-Manager\\\\src\")",
-      "Bash(git push:*)"
-    ]
-  }
-}
