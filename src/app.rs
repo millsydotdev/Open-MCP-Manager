@@ -1,4 +1,6 @@
-use crate::components::{ConfigViewer, Explorer, Navbar, ServerConsole, ServerList, Sidebar};
+use crate::components::{
+    ConfigViewer, Explorer, Navbar, ServerConsole, ServerList, Sidebar, ToastContainer,
+};
 use crate::models::{CreateServerArgs, McpServer};
 use crate::state::{use_app_state, APP_STATE};
 use dioxus::prelude::*;
@@ -85,7 +87,9 @@ pub fn App() -> Element {
         // Add some custom scrollbar css if needed, or rely on tailwind plugin if configured.
 
         div {
-            class: "flex h-screen bg-gray-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-sans overflow-hidden transition-colors duration-200",
+            class: "flex h-screen bg-gray-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-sans overflow-hidden transition-colors duration-200 relative",
+
+            ToastContainer {}
 
             Sidebar {}
 

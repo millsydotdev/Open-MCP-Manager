@@ -9,8 +9,22 @@ pub enum AppError {
     Io(String),
     #[error("Serialization error: {0}")]
     Serialization(String),
-    // Validation(String),
-    // Process(String),
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub enum NotificationLevel {
+    Info,
+    Success,
+    Warning,
+    Error,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct Notification {
+    pub id: u32,
+    pub message: String,
+    pub level: NotificationLevel,
+    pub duration: u32, // in seconds
 }
 
 impl From<rusqlite::Error> for AppError {
