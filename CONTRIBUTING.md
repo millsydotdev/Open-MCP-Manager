@@ -1,68 +1,79 @@
 # Contributing to Open MCP Manager
 
-First off, thank you for considering contributing to Open MCP Manager! It's people like you who make this tool better for everyone.
+👋 **Welcome!** We are thrilled that you're interested in contributing to Open MCP Manager. It's people like you who help keep the open-source ecosystem alive and thriving.
+
+Whether you're fixing a typo, updating docs, or building the next big feature, we appreciate your help!
+
+## 🗺️ Project Structure
+
+To help you find your way around, here's a quick overview of the codebase:
+
+- **`src/`**: The heart of the application (Rust).
+  - **`components/`**: Reusable Dioxus UI components (e.g., `NavBar`, `ServerList`).
+  - **`app.rs`**: The main entry point and routing logic.
+  - **`state.rs`**: Global application state management.
+  - **`db.rs`**: Database interactions and persistence.
+- **`public/`**: Static assets like images, icons, and global CSS.
+- **`scripts/`**: Helper scripts for build and maintenance tasks.
+- **`.github/`**: CI/CD workflows and issue templates.
 
 ## 🛠️ Development Setup
 
+We strive to make the developer experience as smooth as possible. We use `npm` to standardize commands across platforms.
+
 ### Prerequisites
 
-- **Rust**: Latest stable version.
-- **Dioxus CLI**: `cargo install dioxus-cli`.
-- **Node.js & npm**: Required for our unified build scripts.
+1. **Rust**: Make sure you have the latest stable Rust installed.
+2. **Dioxus CLI**: Install it with `cargo install dioxus-cli`.
+3. **Node.js**: Required for our build scripts.
 
-### Local Development Workflow
+### Workflow
 
-We use `npm` to orchestrate our Rust development tasks.
+1. **Clone & Install**:
 
-1. **Clone the Repository**
+    ```bash
+    git clone https://github.com/millsydotdev/Open-MCP-Manager.git
+    cd Open-MCP-Manager
+    npm install
+    ```
 
-   ```bash
-   git clone https://github.com/millsydotdev/Open-MCP-Manager.git
-   cd Open-MCP-Manager
-   ```
+2. **Run Development Server**:
 
-2. **Install Dependencies**
+    ```bash
+    npm run dev
+    ```
 
-   ```bash
-   npm install
-   ```
+    This will start the app with hot-reloading enabled.
 
-3. **Spin up the Dev Server**
+3. **Check Your Work**:
+    Before submitting a PR, please run:
 
-   ```bash
-   npm run dev
-   ```
-
-4. **Run Quality Checks**
-   Before submitting a PR, please ensure all checks pass:
-
-   ```bash
-   npm run lint
-   npm run test
-   npm run check
-   ```
+    ```bash
+    npm run lint   # Checks for code style issues
+    npm run test   # Runs unit tests
+    npm run check  # Verifies compilation
+    ```
 
 ## 🤝 How to Contribute
 
 ### Reporting Issues
 
-Use the [GitHub Issues](https://github.com/millsydotdev/Open-MCP-Manager/issues) to report bugs or request features. Please provide as much context as possible.
+Found a bug or have a feature request? Please use [GitHub Issues](https://github.com/millsydotdev/Open-MCP-Manager/issues). Provide as much detail as possible—screenshots, logs, and reproduction steps are super helpful!
 
-### Pull Requests
+### Submitting Pull Requests
 
-1. Fork the repo and create your branch from `main`.
-2. If you've added code that should be tested, add tests.
-3. Ensure the test suite passes.
-4. Issue that pull request!
+1. **Fork** the repository.
+2. **Create a branch** for your feature or fix (`git checkout -b feature/amazing-feature`).
+3. **Commit** your changes with clear messages used [Conventional Commits](https://www.conventionalcommits.org/) if possible.
+4. **Push** to your fork.
+5. **Open a Pull Request** against our `main` branch.
+
+We'll review your PR as soon as possible and work with you to get it merged!
 
 ## 📜 Code of Conduct
 
-We expect all contributors to adhere to our [Code of Conduct](CODE_OF_CONDUCT.md).
-
-## 💬 Community
-
-Questions? Feature ideas? Join the conversation in [GitHub Discussions](https://github.com/millsydotdev/Open-MCP-Manager/discussions).
+We are committed to providing a friendly, safe, and welcoming environment for all. Please review our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ---
 
-*Happy Coding!*
+**Happy Hacking!** 🚀

@@ -3,8 +3,8 @@ use dioxus::prelude::*;
 
 #[component]
 pub fn ThreePreview() -> Element {
-    let servers = APP_STATE.read().servers.clone();
-    let running_handlers = APP_STATE.read().running_handlers.clone();
+    let servers = APP_STATE.read().servers;
+    let running_handlers = APP_STATE.read().running_handlers;
 
     let server_count = servers.read().len();
 

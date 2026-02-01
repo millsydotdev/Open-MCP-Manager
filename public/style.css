@@ -79,15 +79,15 @@ h6 {
    ========================================= */
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
 }
 
 .glass-panel {
   background: linear-gradient(145deg, rgba(39, 39, 42, 0.4) 0%, rgba(24, 24, 27, 0.2) 100%);
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
@@ -133,9 +133,11 @@ h6 {
 }
 
 /* Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #3f3f46 transparent;
+@supports (scrollbar-width: thin) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #3f3f46 transparent;
+  }
 }
 
 /* =========================================
@@ -222,8 +224,8 @@ h6 {
 
 /* Backdrop Blur */
 .backdrop-blur-sm {
-  backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 
 /* Gradients */
@@ -281,20 +283,8 @@ h6 {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.bg-black-20 {
-  background-color: rgba(0, 0, 0, 0.2);
-}
-
 .bg-black-30 {
   background-color: rgba(0, 0, 0, 0.3);
-}
-
-.border-white-5 {
-  border-color: rgba(255, 255, 255, 0.05);
-}
-
-.border-white-10 {
-  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .text-zinc-100 {
@@ -303,14 +293,6 @@ h6 {
 
 .text-zinc-300 {
   color: #d4d4d8;
-}
-
-.text-zinc-400 {
-  color: var(--text-muted);
-}
-
-.text-zinc-500 {
-  color: var(--text-dim);
 }
 
 .from-app-dark {

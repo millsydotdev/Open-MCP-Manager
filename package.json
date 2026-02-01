@@ -7,8 +7,12 @@
     "test": "tests"
   },
   "scripts": {
-    "dev": "dx serve --platform desktop",
-    "build": "dx bundle --platform desktop --release",
+    "check-env": "node scripts/check-dx.js",
+    "dev": "npm run check-env && concurrently \"npm:watch:css\" \"npm:dx:serve\"",
+    "dx:serve": "dx serve --platform desktop",
+    "watch:css": "npx tailwindcss -i ./input.css -o ./public/tailwind.css --watch",
+    "build": "npm run check-env && npm run build:css && dx bundle --platform desktop --release",
+    "build:css": "npx tailwindcss -i ./input.css -o ./public/tailwind.css --minify",
     "check": "cargo check",
     "lint": "cargo clippy -- -D warnings",
     "test": "cargo test",
@@ -28,6 +32,7 @@
   },
   "homepage": "https://github.com/millsydotdev/Open-MCP-Manager#readme",
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "tailwindcss": "^3.4.19"
   }
 }

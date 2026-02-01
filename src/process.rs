@@ -8,6 +8,8 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{Child, Command};
 use tokio::sync::{mpsc, oneshot, Mutex};
 
+type PendingRequests = Arc<Mutex<HashMap<u64, oneshot::Sender<Result<Value, String>>>>>;
+
 #[derive(Serialize, Deserialize, Debug)]
 struct JsonRpcRequest {
     jsonrpc: String,
@@ -35,7 +37,7 @@ pub enum ProcessLog {
 pub struct McpProcess {
     pub child: Arc<Mutex<Child>>,
     pub stdin_tx: mpsc::Sender<String>,
-    pub pending_requests: Arc<Mutex<HashMap<u64, oneshot::Sender<Result<Value, String>>>>>,
+    pub pending_requests: PendingRequests,
     pub next_request_id: Arc<Mutex<u64>>,
 }
 
@@ -43,7 +45,7 @@ pub struct McpSseClient {
     pub url: String,
     pub request_url: Arc<Mutex<Option<String>>>,
     pub client: reqwest::Client,
-    pub pending_requests: Arc<Mutex<HashMap<u64, oneshot::Sender<Result<Value, String>>>>>,
+    pub pending_requests: PendingRequests,
     pub next_request_id: Arc<Mutex<u64>>,
 }
 
@@ -293,8 +295,7 @@ impl McpSseClient {
                 for line in text.lines() {
                     if line.starts_with("event: endpoint") {
                         // Wait for next line "data: ..."
-                    } else if line.starts_with("data: ") {
-                        let data = &line[6..];
+                    } else if let Some(data) = line.strip_prefix("data: ") {
                         if data.starts_with("http") {
                             let mut req_url = request_url_clone.lock().await;
                             *req_url = Some(data.to_string());

@@ -1,37 +1,65 @@
 # <img src="public/window.svg" width="32" height="32" valign="middle" /> Open MCP Manager
 
 <p align="left">
-  <a href="https://github.com/millsydotdev/Open-MCP-Manager/releases"><img src="https://img.shields.io/github/v/release/millsydotdev/Open-MCP-Manager?style=flat-square&color=BC1823" alt="Release"></a>
-  <a href="https://github.com/millsydotdev/Open-MCP-Manager/blob/main/LICENSE"><img src="https://img.shields.io/github/license/millsydotdev/Open-MCP-Manager?style=flat-square&color=BC1823" alt="License"></a>
-  <img src="https://img.shields.io/badge/rust-1.75+-blue?style=flat-square&logo=rust&color=BC1823" alt="Rust Version">
+  <a href="https://github.com/millsydotdev/Open-MCP-Manager/releases"><img src="https://img.shields.io/github/v/release/millsydotdev/Open-MCP-Manager?style=for-the-badge&color=BC1823" alt="Release"></a>
+  <a href="https://github.com/millsydotdev/Open-MCP-Manager/blob/main/LICENSE"><img src="https://img.shields.io/github/license/millsydotdev/Open-MCP-Manager?style=for-the-badge&color=black" alt="License"></a>
+  <img src="https://img.shields.io/badge/rust-1.75+-blue?style=for-the-badge&logo=rust&color=BC1823" alt="Rust Version">
+  <a href="https://github.com/millsydotdev/Open-MCP-Manager/actions"><img src="https://img.shields.io/github/actions/workflow/status/millsydotdev/Open-MCP-Manager/ci.yml?style=for-the-badge&logo=github&label=Build" alt="Build Status"></a>
 </p>
 
-A premium, native desktop application for managing [Model Context Protocol (MCP)](https://modelcontextprotocol.io) servers. Built with **Rust** and **Dioxus** for maximum performance and a smooth developer experience.
+A **native, open-source desktop application** for managing [Model Context Protocol (MCP)](https://modelcontextprotocol.io) servers. Built with **Rust** and **Dioxus** for maximum performance, security, and a seamless developer experience.
+
+---
+
+## 📖 Table of Contents
+
+- [Key Features](#-key-features)
+- [Unified Developer Workflow](#-unified-developer-workflow)
+- [Installation & Setup](#-installation--setup)
+- [Troubleshooting](#-troubleshooting)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ---
 
 ## 🚀 Key Features
 
-- **Intuitive Management** — Add, edit, and orchestrate local (stdio) and remote (SSE) MCP servers with ease.
-- **Deep Inspector** — Real-time inspection of tools, resources, and prompts. Test commands directly within the UI.
-- **Smart Registry** — Instantly discover and install community-verified servers from the integrated MCP registry.
-- **Claude Integration** — One-click configuration generation for Claude Desktop and other compatible clients.
+- **🔍 Deep Inspector**
+  - Real-time inspection of tools, resources, and prompts.
+  - Test server capabilities directly within the UI without needing a separate client.
+  - View raw JSON payloads for debugging.
 
-* **Modern Aesthetic** — Sleek red/black dark mode, powered by custom CSS and smooth animations.
+- **📦 Smart Registry**
+  - Integrated MCP registry browser.
+  - One-click installation of community-verified servers.
+  - Automatic dependency resolution for stdio servers.
+
+- **⚙️ Intuitive Management**
+  - Edit configuration for local (stdio) and remote (SSE) servers.
+  - Manage environment variables and command arguments via a clean UI.
+  - Toggle servers on/off instantly.
+
+- **🔌 Client Integration**
+  - Generate configurations for Claude Desktop, Windsurf, and other MCP clients.
+  - Seamlessly sync your managed servers with your favorite AI coding assistants.
+
+- **✨ Polished UX**
+  - Modern, responsive interface with a sleek dark mode.
+  - Built with accessibility and performance in mind.
 
 ---
 
 ## 🛠️ Unified Developer Workflow
 
-We have unified the build process. You can now use standard `npm` commands to manage your development environment.
+We have streamlined the development process using standard `npm` commands, backed by Rust's powerful toolchain.
 
 | Command | Description |
 | :--- | :--- |
-| `npm run dev` | Launch the desktop app in development mode with hot-reload. |
-| `npm run build` | Compile the optimized production bundle. |
-| `npm run check` | Run Rust compiler checks. |
-| `npm run test` | Execute the unit test suite. |
-| `npm run lint` | Run Clippy for code quality. |
+| `npm run dev` | **Start here!** Launches the app in development mode with hot-reloading. |
+| `npm run build` | Compiles an optimized release binary for your platform. |
+| `npm run check` | Runs `cargo check` to catch type errors quickly. |
+| `npm run test` | Executes the full unit test suite. |
+| `npm run lint` | Runs `cargo clippy` to ensure code quality and idiomatic Rust. |
 
 ---
 
@@ -39,45 +67,80 @@ We have unified the build process. You can now use standard `npm` commands to ma
 
 ### Prerequisites
 
-- **Rust**: [Install via rustup](https://www.rust-lang.org/tools/install)
-- **Dioxus CLI**: `cargo install dioxus-cli`
-- **Node.js**: Required for the unified build scripts.
+- **Rust**: [Install via rustup](https://www.rust-lang.org/tools/install) (ensure you have stable toolchain).
+- **Node.js**: Required for the unified build scripts and TailwindCSS processing.
+- **Dioxus CLI**: *Optional*. The scripts will attempt to install this automatically if missing. You can also install it manually via `cargo install dioxus-cli`.
 
-### Quick Start
+### Quick Start (Source)
 
-1. **Clone & Install Dependencies**
+1. **Clone the Repository**
 
-   ```bash
-   git clone https://github.com/millsydotdev/Open-MCP-Manager.git
-   cd Open-MCP-Manager
-   npm install
-   ```
+    ```bash
+    git clone https://github.com/millsydotdev/Open-MCP-Manager.git
+    cd Open-MCP-Manager
+    ```
 
-2. **Run Development Mode**
+2. **Install Dependencies**
 
-   ```bash
-   npm run dev
-   ```
+    ```bash
+    npm install
+    ```
 
-### Releases
+3. **Run Development Mode**
 
-Download signed (optional) binaries for your platform from the [Releases](https://github.com/millsydotdev/Open-MCP-Manager/releases) page.
+    ```bash
+    npm run dev
+    ```
+
+### 📥 Binary Releases
+
+Prefer not to build from source? Download the latest signed binaries for Windows and macOS from the [Releases](https://github.com/millsydotdev/Open-MCP-Manager/releases) page.
 
 > [!NOTE]
-> On **Windows**, you may need to click "More Info" -> "Run Anyway" as the binary is currently unsigned.
-> On **macOS**, right-click the `.app` and select "Open" to bypass security gatekeeper for the first run.
+> On **Windows**, you may need to click "More Info" -> "Run Anyway" if SmartScreen alerts appear.
+> On **macOS**, you may need to right-click the app and select "Open" on the first run.
+
+---
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+<details>
+<summary><strong>Command 'dx' not found</strong></summary>
+
+The development server uses the Dioxus CLI. Ensure you have installed it and it is in your PATH:
+
+```bash
+cargo install dioxus-cli
+```
+
+On Windows, you might need to restart your terminal after installation.
+</details>
+
+<details>
+<summary><strong>Build fails with "linker not found"</strong></summary>
+
+Ensure you have the build tools for your platform installed (Visual Studio Build Tools on Windows, Xcode Command Line Tools on macOS).
+</details>
+
+<details>
+<summary><strong>UI styles look broken or missing</strong></summary>
+
+Ensure you ran `npm install` so that TailwindCSS can generate the styles. `npm run dev` handles the CSS generation automatically.
+</details>
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+We welcome contributions of all kinds! Whether it's fixing a bug, improving the docs, or adding a new feature.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and how to get started.
 
 ## 📄 License
 
-Distributed under the **ISC License**. See `LICENSE` for more information.
+Distributed under the **ISC License**. See [LICENSE](LICENSE) for more information.
 
 ---
 

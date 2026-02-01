@@ -4,9 +4,9 @@ use dioxus::prelude::*;
 pub fn Research() -> Element {
     let research_notes = crate::state::APP_STATE.read().research_notes;
     let mut show_new_note = use_signal(|| false);
-    let mut research_input = use_signal(|| String::new());
+    let mut research_input = use_signal(String::new);
     let mut is_researching = use_signal(|| false);
-    let mut research_results = use_signal(|| Vec::<(String, String, String)>::new());
+    let mut research_results = use_signal(Vec::<(String, String, String)>::new);
 
     rsx! {
         div { class: "flex-1 flex flex-col min-w-0 bg-transparent animate-fade-in",

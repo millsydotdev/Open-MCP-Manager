@@ -11,7 +11,7 @@ pub struct ServerCardProps {
 
 pub fn ServerCard(props: ServerCardProps) -> Element {
     let server = props.server.clone();
-    let processes = APP_STATE.read().processes.clone();
+    let processes = APP_STATE.read().processes;
 
     // Check if running by looking up ID in processes map
     let is_running = use_memo(move || processes.read().contains_key(&server.id));
@@ -20,7 +20,7 @@ pub fn ServerCard(props: ServerCardProps) -> Element {
     let toggle_server = move |_| {
         let srv = server_for_toggle.clone();
         spawn(async move {
-            let p = APP_STATE.read().processes.clone();
+            let p = APP_STATE.read().processes;
             let running = p.read().contains_key(&srv.id);
 
             if running {
