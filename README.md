@@ -1,11 +1,9 @@
 # <img src="public/window.svg" width="32" height="32" valign="middle" /> Open MCP Manager
 
-<p align="left">
-  <a href="https://github.com/millsydotdev/Open-MCP-Manager/releases"><img src="https://img.shields.io/github/v/release/millsydotdev/Open-MCP-Manager?style=for-the-badge&color=BC1823" alt="Release"></a>
-  <a href="https://github.com/millsydotdev/Open-MCP-Manager/blob/main/LICENSE"><img src="https://img.shields.io/github/license/millsydotdev/Open-MCP-Manager?style=for-the-badge&color=black" alt="License"></a>
-  <img src="https://img.shields.io/badge/rust-1.75+-blue?style=for-the-badge&logo=rust&color=BC1823" alt="Rust Version">
-  <a href="https://github.com/millsydotdev/Open-MCP-Manager/actions"><img src="https://img.shields.io/github/actions/workflow/status/millsydotdev/Open-MCP-Manager/ci.yml?style=for-the-badge&logo=github&label=Build" alt="Build Status"></a>
-</p>
+[![Release](https://img.shields.io/github/v/release/millsydotdev/Open-MCP-Manager?include_prereleases&label=release)](https://github.com/millsydotdev/Open-MCP-Manager/releases)
+[![License](https://img.shields.io/github/license/millsydotdev/Open-MCP-Manager)](LICENSE)
+[![Build](https://img.shields.io/github/actions/workflow/status/millsydotdev/Open-MCP-Manager/ci.yml?branch=main)](https://github.com/millsydotdev/Open-MCP-Manager/actions)
+[![Rust](https://img.shields.io/badge/rust-1.75+-orange?logo=rust)](https://www.rust-lang.org/)
 
 A **native, open-source desktop application** for managing [Model Context Protocol (MCP)](https://modelcontextprotocol.io) servers. Built with **Rust** and **Dioxus** for maximum performance, security, and a seamless developer experience.
 
@@ -140,7 +138,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and ho
 
 ## 📄 License
 
-Distributed under the **ISC License**. See [LICENSE](LICENSE) for more information.
+Distributed under the **MIT License**. See [LICENSE](LICENSE) for more information.
 
 ---
 
