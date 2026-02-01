@@ -1,5 +1,5 @@
 [application]
-name = "Open MCP Manager"
+name = "open-mcp-manager"
 default_platform = "desktop"
 
 [web.app]

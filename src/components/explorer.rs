@@ -312,11 +312,7 @@ async fn fetch_community_registry() -> Vec<RegistryItem> {
 async fn fetch_dynamic_registry() -> Vec<RegistryItem> {
     let mut items = get_official_registry();
 
-    // 1. Fetch Official (existing logic kept but minimized if needed, for now we rely on community search mostly)
-    // Actually, let's just use community search as the primary "Massive" list.
-    // But we might want to keep the specific parsing of the official repo if it provides better data.
-    // For now, let's append the community search results.
-
+    // 1. Fetch Community results
     let community_items = fetch_community_registry().await;
 
     // Merge logic: prefer official items if names collide?
@@ -741,8 +737,11 @@ pub fn Explorer(props: ExplorerProps) -> Element {
 }
 
 pub fn get_official_registry() -> Vec<RegistryItem> {
-    let registry_json = include_str!("../../registry.json");
-    serde_json::from_str(registry_json).unwrap_or_default()
+    if let Ok(db) = Database::new() {
+        db.get_cached_registry(Some("official")).unwrap_or_default()
+    } else {
+        Vec::new()
+    }
 }
 
 #[cfg(test)]

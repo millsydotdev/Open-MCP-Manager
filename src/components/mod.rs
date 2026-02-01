@@ -1,6 +1,7 @@
 mod config_viewer;
 mod explorer;
 mod navbar;
+mod research;
 mod server_card;
 mod server_console;
 mod server_list;
@@ -13,6 +14,7 @@ pub mod toast;
 pub use config_viewer::ConfigViewer;
 pub use explorer::Explorer;
 pub use navbar::Navbar;
+pub use research::Research;
 pub use server_card::ServerCard;
 pub use server_console::ServerConsole;
 pub use server_list::ServerList;

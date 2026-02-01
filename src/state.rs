@@ -1,6 +1,7 @@
 use crate::db::Database;
 use crate::models::{
-    CreateServerArgs, McpServer, Notification, NotificationLevel, RegistryItem, UpdateServerArgs,
+    CreateServerArgs, McpServer, Notification, NotificationLevel, RegistryItem, ResearchNote,
+    UpdateServerArgs,
 };
 use crate::process::{McpProcess, ProcessLog};
 use dioxus::prelude::*;
@@ -13,10 +14,11 @@ use tokio::sync::mpsc; // Added for running updates
 pub struct AppState {
     pub servers: Signal<Vec<McpServer>>,
     pub processes: Signal<HashMap<String, Signal<String>>>,
-    pub running_handlers: Signal<HashMap<String, Arc<McpProcess>>>,
+    pub running_handlers: Signal<HashMap<String, Arc<crate::process::McpHandler>>>,
     pub db: Signal<Option<Database>>,
     pub notifications: Signal<Vec<Notification>>, // New signal
     pub community_servers: Signal<Vec<RegistryItem>>,
+    pub research_notes: Signal<Vec<ResearchNote>>,
 }
 
 // Global signal
@@ -27,6 +29,7 @@ pub static APP_STATE: GlobalSignal<AppState> = Signal::global(|| AppState {
     db: Signal::new(None),
     notifications: Signal::new(Vec::new()),
     community_servers: Signal::new(Vec::new()),
+    research_notes: Signal::new(Vec::new()),
 });
 
 pub fn use_app_state() {
@@ -38,6 +41,9 @@ pub fn use_app_state() {
                     APP_STATE.write().db.set(Some(db.clone()));
                     if let Ok(servers) = db.get_servers() {
                         APP_STATE.write().servers.set(servers);
+                    }
+                    if let Ok(notes) = db.get_research_notes() {
+                        APP_STATE.write().research_notes.set(notes);
                     }
                 }
                 Err(e) => {
@@ -91,11 +97,27 @@ impl AppState {
         }
     }
 
-    pub async fn start_server_process(server: McpServer) -> Result<(), String> {
-        if server.command.is_none() {
-            return Err("No command specified".into());
+    pub async fn refresh_research_notes() {
+        let db_opt = APP_STATE.read().db.cloned();
+        if let Some(db) = db_opt {
+            if let Ok(notes) = db.get_research_notes() {
+                APP_STATE.write().research_notes.set(notes);
+            }
         }
+    }
 
+    pub async fn save_research_note(note: ResearchNote) -> Result<(), String> {
+        let db_opt = APP_STATE.read().db.cloned();
+        if let Some(db) = db_opt {
+            db.save_research_note(note).map_err(|e| e.to_string())?;
+            Self::refresh_research_notes().await;
+            Ok(())
+        } else {
+            Err("DB not initialized".into())
+        }
+    }
+
+    pub async fn start_server_process(server: McpServer) -> Result<(), String> {
         // Don't start if already running
         if APP_STATE
             .read()
@@ -132,24 +154,24 @@ impl AppState {
             .write()
             .insert(server.id.clone(), log_signal);
 
-        let env_map = server.env.unwrap_or_default();
-        let cmd = server.command.unwrap();
-        let args = server.args.unwrap_or_default();
+        let handler = if server.server_type == "sse" {
+            let url = server.url.clone().ok_or("SSE server must have a URL")?;
+            let sse_client = crate::process::McpSseClient::start(url, log_tx).await?;
+            Arc::new(crate::process::McpHandler::Sse(sse_client))
+        } else {
+            let env_map = server.env.unwrap_or_default();
+            let cmd = server.command.ok_or("No command specified")?;
+            let args = server.args.unwrap_or_default();
 
-        let process_res =
-            McpProcess::start(server.id.clone(), cmd, args, Some(env_map), log_tx).await;
+            let proc =
+                McpProcess::start(server.id.clone(), cmd, args, Some(env_map), log_tx).await?;
+            Arc::new(crate::process::McpHandler::Stdio(proc))
+        };
 
-        match process_res {
-            Ok(proc) => {
-                let arc_proc = Arc::new(proc);
-                let state = APP_STATE.read();
-                let mut handlers = state.running_handlers;
-                handlers.write().insert(server.id.clone(), arc_proc);
-                tracing::info!("Started server {}", server.name);
-                Ok(())
-            }
-            Err(e) => Err(e),
-        }
+        let mut handlers = APP_STATE.write().running_handlers;
+        handlers.write().insert(server.id, handler);
+        tracing::info!("Started server {}", server.name);
+        Ok(())
     }
 
     pub async fn stop_server_process(id: &str) {

@@ -1,6 +1,6 @@
 use crate::models::{
     AppError, AppResult, CreateServerArgs, McpServer, RegistryInstallConfig, RegistryItem,
-    RegistryServer, UpdateServerArgs,
+    RegistryServer, ResearchNote, UpdateServerArgs,
 };
 use rusqlite::{params, Connection};
 use std::path::PathBuf;
@@ -17,9 +17,22 @@ impl Database {
         let db_path = get_db_path()?;
         let conn = Connection::open(db_path)?;
         init_db_schema(&conn)?;
-        Ok(Self {
+        let db = Self {
             conn: Arc::new(Mutex::new(conn)),
-        })
+        };
+        db.bootstrap_registry()?;
+        Ok(db)
+    }
+
+    fn bootstrap_registry(&self) -> AppResult<()> {
+        let items = self.get_cached_registry(Some("official"))?;
+        if items.is_empty() {
+            println!("Bootstrapping registry from JSON...");
+            let registry_json = include_str!("../registry.json");
+            let official_items: Vec<RegistryItem> = serde_json::from_str(registry_json)?;
+            self.cache_registry(&official_items, "official")?;
+        }
+        Ok(())
     }
 
     // For testing purposes
@@ -378,7 +391,6 @@ impl Database {
         }
     }
 
-    /// Clear all registry cache
     pub fn clear_registry_cache(&self) -> AppResult<()> {
         let conn = self
             .conn
@@ -389,6 +401,55 @@ impl Database {
         conn.execute(
             "DELETE FROM cache_metadata WHERE key LIKE 'registry_cache_%'",
             [],
+        )?;
+        Ok(())
+    }
+
+    // === Research Note Methods ===
+
+    pub fn get_research_notes(&self) -> AppResult<Vec<ResearchNote>> {
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| AppError::Database(e.to_string()))?;
+        let mut stmt = conn.prepare("SELECT * FROM research_notes ORDER BY updated_at DESC")?;
+
+        let note_iter = stmt.query_map([], |row| {
+            let tags_str: String = row.get(3)?;
+            Ok(ResearchNote {
+                id: row.get(0)?,
+                title: row.get(1)?,
+                content: row.get(2)?,
+                tags: serde_json::from_str(&tags_str).unwrap_or_default(),
+                created_at: row.get(4)?,
+                updated_at: row.get(5)?,
+            })
+        })?;
+
+        let mut notes = Vec::new();
+        for note in note_iter {
+            notes.push(note?);
+        }
+        Ok(notes)
+    }
+
+    pub fn save_research_note(&self, note: ResearchNote) -> AppResult<()> {
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| AppError::Database(e.to_string()))?;
+        let tags_json = serde_json::to_string(&note.tags)?;
+
+        conn.execute(
+            "INSERT OR REPLACE INTO research_notes (id, title, content, tags, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            params![
+                note.id,
+                note.title,
+                note.content,
+                tags_json,
+                note.created_at,
+                note.updated_at
+            ],
         )?;
         Ok(())
     }
@@ -449,6 +510,19 @@ fn init_db_schema(conn: &Connection) -> AppResult<()> {
         "CREATE TABLE IF NOT EXISTS cache_metadata (
             key TEXT PRIMARY KEY,
             value TEXT NOT NULL,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // Research notes table for the 'Research Project'
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS research_notes (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            content TEXT,
+            tags TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )",
         [],

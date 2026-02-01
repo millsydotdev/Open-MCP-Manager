@@ -175,7 +175,11 @@ pub fn ConfigViewer(props: ConfigViewerProps) -> Element {
             for server in props.servers.iter().filter(|s| s.is_active) {
                 let mut server_config = serde_json::Map::new();
 
-                if let Some(cmd) = &server.command {
+                if server.server_type == "sse" {
+                    if let Some(url) = &server.url {
+                        server_config.insert("url".to_string(), json!(url));
+                    }
+                } else if let Some(cmd) = &server.command {
                     server_config.insert("command".to_string(), json!(cmd));
                 }
                 if let Some(args) = &server.args {

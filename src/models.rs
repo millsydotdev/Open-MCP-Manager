@@ -163,6 +163,16 @@ pub struct ReadResourceResult {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct ResearchNote {
+    pub id: String,
+    pub title: String,
+    pub content: Option<String>,
+    pub tags: Vec<String>,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct RegistryItem {
     pub server: RegistryServer,
     pub install_config: Option<RegistryInstallConfig>,
