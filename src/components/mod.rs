@@ -8,6 +8,7 @@ mod settings;
 mod sidebar;
 mod theme_toggle;
 mod three_preview;
+pub mod toast;
 
 pub use config_viewer::ConfigViewer;
 pub use explorer::Explorer;
@@ -18,3 +19,4 @@ pub use server_list::ServerList;
 pub use settings::Settings;
 pub use sidebar::Sidebar;
 pub use theme_toggle::ThemeToggle;
+pub use toast::ToastContainer;

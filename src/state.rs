@@ -1,17 +1,21 @@
 use crate::db::Database;
-use crate::models::{CreateServerArgs, McpServer, UpdateServerArgs};
+use crate::models::{
+    CreateServerArgs, McpServer, Notification, NotificationLevel, UpdateServerArgs,
+};
 use crate::process::{McpProcess, ProcessLog};
 use dioxus::prelude::*;
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::mpsc;
+use tokio::process::Command;
+use tokio::sync::mpsc; // Added for running updates
 
 #[derive(Clone, Copy)]
 pub struct AppState {
     pub servers: Signal<Vec<McpServer>>,
-    pub processes: Signal<HashMap<String, Signal<String>>>, // Log signals
-    pub running_handlers: Signal<HashMap<String, Arc<McpProcess>>>, // Process handles
+    pub processes: Signal<HashMap<String, Signal<String>>>,
+    pub running_handlers: Signal<HashMap<String, Arc<McpProcess>>>,
     pub db: Signal<Option<Database>>,
+    pub notifications: Signal<Vec<Notification>>, // New signal
 }
 
 // Global signal
@@ -20,6 +24,7 @@ pub static APP_STATE: GlobalSignal<AppState> = Signal::global(|| AppState {
     processes: Signal::new(HashMap::new()),
     running_handlers: Signal::new(HashMap::new()),
     db: Signal::new(None),
+    notifications: Signal::new(Vec::new()),
 });
 
 pub fn use_app_state() {
@@ -261,6 +266,136 @@ impl AppState {
             Ok(duration)
         } else {
             Err("Process not running".into())
+        }
+    }
+
+    pub fn push_notification(message: String, level: NotificationLevel) {
+        let mut notifications = APP_STATE.write().notifications;
+        // Simple ID generation using time
+        let id = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .subsec_nanos();
+
+        notifications.push(Notification {
+            id,
+            message,
+            level,
+            duration: 5,
+        });
+    }
+
+    pub fn remove_notification(id: u32) {
+        let mut notifications = APP_STATE.write().notifications;
+        notifications.retain(|n| n.id != id);
+    }
+
+    pub async fn update_server_package(id: String) {
+        let server_opt: Option<McpServer> = {
+            let state = APP_STATE.read();
+            let db_lock = state.db.read();
+            if let Some(db) = db_lock.as_ref() {
+                db.get_server(id).ok()
+            } else {
+                None
+            }
+        };
+
+        if let Some(server) = server_opt {
+            if let Some(cmd) = server.command {
+                let cmd_str = cmd.as_str();
+
+                // Heuristic for NPM
+                if cmd_str == "npx" || cmd_str.ends_with("npx") || cmd_str.ends_with("npx.cmd") {
+                    if let Some(args) = &server.args {
+                        // Borrow args
+                        let pkg_opt = args.iter().find(|a: &&String| !a.starts_with("-"));
+                        if let Some(pkg) = pkg_opt {
+                            Self::push_notification(
+                                format!("Updating {}...", pkg),
+                                NotificationLevel::Info,
+                            );
+
+                            let output = Command::new("npm")
+                                .args(["install", "-g", &format!("{}@latest", pkg)])
+                                .output()
+                                .await;
+
+                            match output {
+                                Ok(o) => {
+                                    if o.status.success() {
+                                        Self::push_notification(
+                                            format!("Updated {} successfully", pkg),
+                                            NotificationLevel::Success,
+                                        );
+                                    } else {
+                                        let err = String::from_utf8_lossy(&o.stderr);
+                                        Self::push_notification(
+                                            format!("Update failed: {}", err),
+                                            NotificationLevel::Error,
+                                        );
+                                    }
+                                }
+                                Err(e) => {
+                                    Self::push_notification(
+                                        format!("Failed to run update: {}", e),
+                                        NotificationLevel::Error,
+                                    );
+                                }
+                            }
+                            return;
+                        }
+                    }
+                }
+
+                // Heuristic for Python (uvx/uv)
+                if cmd_str == "uvx" || cmd_str == "uv" {
+                    if let Some(args) = &server.args {
+                        // Borrow args
+                        let pkg_opt = args.iter().find(|a: &&String| {
+                            !a.starts_with("-") && a.as_str() != "tool" && a.as_str() != "run"
+                        });
+                        if let Some(pkg) = pkg_opt {
+                            Self::push_notification(
+                                format!("Updating {}...", pkg),
+                                NotificationLevel::Info,
+                            );
+                            let output = Command::new("uv")
+                                .args(["tool", "upgrade", pkg])
+                                .output()
+                                .await;
+                            match output {
+                                Ok(o) => {
+                                    if o.status.success() {
+                                        Self::push_notification(
+                                            format!("Updated {} successfully", pkg),
+                                            NotificationLevel::Success,
+                                        );
+                                    } else {
+                                        let err = String::from_utf8_lossy(&o.stderr);
+                                        Self::push_notification(
+                                            format!("Update info: {}", err),
+                                            NotificationLevel::Info,
+                                        );
+                                    }
+                                }
+                                Err(e) => Self::push_notification(
+                                    format!("Update error: {}", e),
+                                    NotificationLevel::Error,
+                                ),
+                            }
+                            return;
+                        }
+                    }
+                }
+
+                Self::push_notification(
+                    "Automatic update not supported for this configuration.".to_string(),
+                    NotificationLevel::Warning,
+                );
+            }
+        } else {
+            Self::push_notification("Server not found".to_string(), NotificationLevel::Error);
         }
     }
 }

@@ -63,6 +63,35 @@ impl Database {
         Ok(servers)
     }
 
+    pub fn get_server(&self, id: String) -> AppResult<McpServer> {
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| AppError::Database(e.to_string()))?;
+        let mut stmt = conn.prepare("SELECT * FROM mcp_servers WHERE id = ?1")?;
+
+        let server = stmt.query_row(params![id], |row| {
+            let args_str: Option<String> = row.get(4).ok();
+            let env_str: Option<String> = row.get(6).ok();
+
+            Ok(McpServer {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                server_type: row.get(2)?,
+                command: row.get(3)?,
+                args: args_str.and_then(|s| serde_json::from_str(&s).ok()),
+                url: row.get(5)?,
+                env: env_str.and_then(|s| serde_json::from_str(&s).ok()),
+                description: row.get(7)?,
+                is_active: row.get(8)?,
+                created_at: row.get(9)?,
+                updated_at: row.get(10)?,
+            })
+        })?;
+
+        Ok(server)
+    }
+
     pub fn create_server(&self, args: CreateServerArgs) -> AppResult<McpServer> {
         let conn = self
             .conn

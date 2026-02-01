@@ -160,6 +160,15 @@ pub fn ServerConsole(props: ServerConsoleProps) -> Element {
         });
     };
 
+    let srv_id_update = props.server.id.clone();
+    let update_package = move |_| {
+        let id_val = srv_id_update.clone();
+        spawn(async move {
+            // This will push notifications on its own
+            AppState::update_server_package(id_val).await;
+        });
+    };
+
     let current_tab = active_tab.read().clone();
     let current_tool = active_tool.read().clone();
     let current_resource = active_resource_content.read().clone();
@@ -192,6 +201,11 @@ pub fn ServerConsole(props: ServerConsoleProps) -> Element {
                             class: "px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded text-xs font-bold mr-2 border border-zinc-700 transition-colors",
                             onclick: test_connection,
                             if ping_result().is_none() { "Test Connection" } else { "Retest" }
+                        }
+                        button {
+                            class: "px-3 py-1 bg-blue-900/40 hover:bg-blue-800/60 text-blue-200 rounded text-xs font-bold mr-2 border border-blue-900/50 transition-colors flex items-center gap-1",
+                            onclick: update_package,
+                            "⚡ Update"
                         }
                         button {
                             class: "p-2 hover:bg-zinc-800 rounded-full text-zinc-400 hover:text-white transition-colors",
