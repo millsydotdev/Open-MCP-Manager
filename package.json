@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/millsydotdev/Open-MCP-Manager#readme",
   "devDependencies": {
-    "@tailwindcss/cli": "^4.1.18",
+    "@tailwindcss/cli": "^4.2.0",
     "concurrently": "^9.2.1",
     "tailwindcss": "^4.1.18"
   }
